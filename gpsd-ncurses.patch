@@ -1,0 +1,24 @@
+diff -uNr gpsd-2.30.orig/cgps.c gpsd-2.30/cgps.c
+--- gpsd-2.30.orig/cgps.c	2005-09-07 00:59:45.000000000 +0200
++++ gpsd-2.30/cgps.c	2005-11-28 10:39:18.685053448 +0100
+@@ -32,7 +32,7 @@
+ #include <sys/select.h>
+ #include <sys/socket.h>
+ 
+-#include <ncurses.h>                                                         
++#include <ncurses/ncurses.h>                                                         
+ #include <signal.h>
+ 
+ #include "gps.h"
+diff -uNr gpsd-2.30.orig/sirfmon.c gpsd-2.30/sirfmon.c
+--- gpsd-2.30.orig/sirfmon.c	2005-07-31 18:22:48.000000000 +0200
++++ gpsd-2.30/sirfmon.c	2005-11-28 10:39:32.264988984 +0100
+@@ -23,7 +23,7 @@
+  * so it deliberately doesn't use much of the library. 
+  */
+ #include <stdio.h>
+-#include <curses.h>
++#include <ncurses/curses.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <math.h>
