@@ -2,26 +2,26 @@
 # - at this time package do not build with dbus support
 #   I do not need it ...
 # Conditional build:
-%bcond_without	dbus	# build without dbus support
+%bcond_with	dbus	# build with dbus support
 
 #
 Summary:	Service daemon for mediating access to a GPS
-#Summary(pl):
+Summary(pl):	Oprogramowanie komunikuj±ce siê z GPS'em
 Name:		gpsd
 Version:	2.30
-Release:	1
+Release:	1.1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
 # Source0-md5:	dde177174878e8ae6db15f8010da46dd
 Patch0:		%{name}-ncurses.patch
 URL:		http://gpsd.berlios.de/
-BuildRequires:	ncurses-devel
-BuildRequires:	X11-devel
-BuildRequires:	openmotif-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
-%if %{?with_dbus}
+BuildRequires:	ncurses-devel
+BuildRequires:	openmotif-devel
+BuildRequires:	XFree86-devel
+%if %{with dbus}
 BuildRequires:	dbus-devel
 BuildRequires:	dbus-glib-devel
 %endif
@@ -72,7 +72,7 @@ support the feature) the locations of accessible satellites.
 xgpsspeed is a speedometer that uses position information from the
 GPS. It accepts an -h option and optional argument as for gps, or a -v
 option to dump the package version and exit. Additionally, it accepts
--rv (reverse video) and -nc (needle color) options.
+- -rv (reverse video) and -nc (needle color) options.
 
 cgps resembles xgps, but without the pictorial satellite display. It
 can run on a serial terminal or terminal emulator.
@@ -86,7 +86,9 @@ can run on a serial terminal or terminal emulator.
 %{__autoconf}
 %{__autoheader}
 %{__automake}
-%configure %{?without_dbus: --enable-dbus}
+%configure \
+	%{?with_dbus: --enable-dbus}
+
 %{__make}
 %{__python} -c "import compiler;compiler.compileFile('gps.py')"
 %{__python} -c "import compiler;compiler.compileFile('gpsfake.py')"
@@ -94,11 +96,6 @@ can run on a serial terminal or terminal emulator.
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_sysconfdir}/hotplug/usb,%{py_sitedir},%{_appdefsdir},%{_datadir}/gpsd/}
-#install -d $RPM_BUILD_ROOT
-#install -d $RPM_BUILD_ROOT/%{_sysconfdir}/hotplug/usb
-#install -d $RPM_BUILD_ROOT/%{py_sitedir}
-#install -d $RPM_BUILD_ROOT/%{_appdefsdir}
-#install -d $RPM_BUILD_ROOT/%{_datadir}/gpsd/
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -112,11 +109,11 @@ install dgpsip-servers $RPM_BUILD_ROOT/%{_datadir}/gpsd/dgpsip-servers
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post -n gpsd
-/sbin/ldconfig
+#%post -n gpsd
+#/sbin/ldconfig
 
-%postun -n gpsd
-/sbin/ldconfig
+#%postun -n gpsd
+#/sbin/ldconfig
 
 %files
 %defattr(644,root,root,755)
@@ -124,9 +121,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_sbindir}/gpsd
 %attr(755,root,root) %{_bindir}/gpsprof
 %attr(755,root,root) %{_bindir}/sirfmon
-%{_libdir}/libgps.la
-%attr(755,root,root) %{_libdir}/libgps.so*
-%{_libdir}/libgps.a
+#%{_libdir}/libgps.la
+#%attr(755,root,root) %{_libdir}/libgps.so*
+#%{_libdir}/libgps.a
+%attr(755,root,root) %{_libdir}/libgps.so.15*
 %{_mandir}/man8/gpsd.8*
 %{_mandir}/man1/gpsprof.1*
 %{_mandir}/man1/sirfmon.1*
@@ -141,10 +139,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/xgpsspeed
 %attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gpspipe
-%{?without_dbus: %attr(755,root,root) %{_bindir}/gpxlogger}
+%{?with_dbus: %attr(755,root,root) %{_bindir}/gpxlogger}
 %{_mandir}/man1/xgps.1*
 %{_mandir}/man1/gpspipe.1*
-%{?without_dbus: %{_mandir}/man1/gpxlogger.1*}
+%{?with_dbus: %{_mandir}/man1/gpxlogger.1*}
 %{_appdefsdir}/xgps
 %{_appdefsdir}/xgpsspeed
 
