@@ -108,7 +108,6 @@ Statyczna biblioteka kliencka GPS.
 Summary:	Clients for gpsd with an X interface
 Summary(pl):	Aplikacje klienckie z interfejsem X
 Group:		Applications/System
-Requires:	openmotif-libs
 Requires:	%{name}-libs = %{version}-%{release}
 
 %description clients
