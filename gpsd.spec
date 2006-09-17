@@ -8,12 +8,12 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl):	Oprogramowanie komunikuj±ce siê z GPS-em
 Name:		gpsd
-Version:	2.30
+Version:	2.33
 Release:	1.1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	dde177174878e8ae6db15f8010da46dd
+# Source0-md5:	03b57754091e4a34e27c78e1dc35c55e
 Patch0:		%{name}-ncurses.patch
 URL:		http://gpsd.berlios.de/
 BuildRequires:	XFree86-devel
@@ -218,10 +218,15 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/xgps
 %attr(755,root,root) %{_bindir}/xgpsspeed
+%attr(755,root,root) %{_bindir}/cgpxlogger
 %attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gpspipe
 %{?with_dbus: %attr(755,root,root) %{_bindir}/gpxlogger}
 %{_mandir}/man1/xgps.1*
+%{_mandir}/man1/cgps.1*
+%{_mandir}/man1/cgpxlogger.1*
+%{_mandir}/man1/gps.1*
+%{_mandir}/man1/xgpsspeed.1*
 %{_mandir}/man1/gpspipe.1*
 %{?with_dbus: %{_mandir}/man1/gpxlogger.1*}
 %{_appdefsdir}/xgps
