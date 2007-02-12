@@ -6,7 +6,7 @@
 %bcond_with	dbus	# build with dbus support
 #
 Summary:	Service daemon for mediating access to a GPS
-Summary(pl):	Oprogramowanie komunikuj±ce siê z GPS-em
+Summary(pl.UTF-8):   Oprogramowanie komunikujÄ…ce siÄ™ z GPS-em
 Name:		gpsd
 Version:	2.33
 Release:	1.1
@@ -48,37 +48,37 @@ protocol. The daemon will be quiescent when there are no clients
 asking for location information, and copes gracefully when the GPS is
 unplugged and replugged.
 
-%description -l pl
-gpsd to demon us³ugi po¶rednicz±cej w dostêpie do sensora GPS
-po³±czonego z komputerem poprzez interfejs szeregowy lub USB,
-udostêpniaj±cy dane o po³o¿eniu, kierunku ruchu i prêdko¶ci z sensora
-na porcie TCP 2947 komputera. Przy u¿yciu gpsd wiele aplikacji
-klienckich GPS (takich jak oprogramowanie nawigacyjne) mo¿e
-wspó³dzieliæ dostêp do GPS-a bez utraty danych. Ponadto gpsd odpowiada
-na zapytania w formacie znacznie ³atwiejszym do przetworzenia ni¿ NMEA
+%description -l pl.UTF-8
+gpsd to demon usÅ‚ugi poÅ›redniczÄ…cej w dostÄ™pie do sensora GPS
+poÅ‚Ä…czonego z komputerem poprzez interfejs szeregowy lub USB,
+udostÄ™pniajÄ…cy dane o poÅ‚oÅ¼eniu, kierunku ruchu i prÄ™dkoÅ›ci z sensora
+na porcie TCP 2947 komputera. Przy uÅ¼yciu gpsd wiele aplikacji
+klienckich GPS (takich jak oprogramowanie nawigacyjne) moÅ¼e
+wspÃ³Å‚dzieliÄ‡ dostÄ™p do GPS-a bez utraty danych. Ponadto gpsd odpowiada
+na zapytania w formacie znacznie Å‚atwiejszym do przetworzenia niÅ¼ NMEA
 0183. Dostarczona jest biblioteka kliencka dla aplikacji.
 
-Po zainstalowaniu tego pakietu gpsd bêdzie siê automatycznie ³±czy³ z
-GPS-ami USB po pod³±czeniu ich. Dla GPS-ów szeregowych trzeba
-uruchomiæ gpsd rêcznie. Po po±czeniu demon automatycznie wykrywa
-w³a¶ciw± prêdko¶æ, liczbê bitów stopu i protokó³. Demon oczekuje
-spokojnie kiedy nie ma klientów i radzi sobie dobrze z od³±czaniem i
-ponownym pod³±czaniem GPS-a.
+Po zainstalowaniu tego pakietu gpsd bÄ™dzie siÄ™ automatycznie Å‚Ä…czyÅ‚ z
+GPS-ami USB po podÅ‚Ä…czeniu ich. Dla GPS-Ã³w szeregowych trzeba
+uruchomiÄ‡ gpsd rÄ™cznie. Po poÄ…czeniu demon automatycznie wykrywa
+wÅ‚aÅ›ciwÄ… prÄ™dkoÅ›Ä‡, liczbÄ™ bitÃ³w stopu i protokÃ³Å‚. Demon oczekuje
+spokojnie kiedy nie ma klientÃ³w i radzi sobie dobrze z odÅ‚Ä…czaniem i
+ponownym podÅ‚Ä…czaniem GPS-a.
 
 %package libs
 Summary:	GPS client library
-Summary(pl):	Biblioteka kliencka GPS
+Summary(pl.UTF-8):   Biblioteka kliencka GPS
 Group:		Libraries
 
 %description libs
 GPS client library.
 
-%description libs -l pl
+%description libs -l pl.UTF-8
 Biblioteka kliencka GPS.
 
 %package devel
 Summary:	Client libraries in C and Python for talking to a running gpsd or GPS
-Summary(pl):	Biblioteki klienckie dla C i Pythona do komunikacji z gpsd lub GPS-em
+Summary(pl.UTF-8):   Biblioteki klienckie dla C i Pythona do komunikacji z gpsd lub GPS-em
 Group:		Development/Libraries
 Requires:	%{name}-libs = %{version}-%{release}
 
@@ -87,26 +87,26 @@ This package provides C header files for the gpsd shared libraries
 that manage access to a GPS for applications; also Python modules. You
 will need to have gpsd installed for it to work.
 
-%description devel -l pl
-Ten pakiet zawiera pliki nag³ówkowe C dla bibliotek wspó³dzielonych
-gpsd zarz±dzaj±cych dostêpem do GPS-a dla aplikacji, a tak¿e modu³y
-Pythona. Do dzia³ania bibliotek potrzebny jest gpsd.
+%description devel -l pl.UTF-8
+Ten pakiet zawiera pliki nagÅ‚Ã³wkowe C dla bibliotek wspÃ³Å‚dzielonych
+gpsd zarzÄ…dzajÄ…cych dostÄ™pem do GPS-a dla aplikacji, a takÅ¼e moduÅ‚y
+Pythona. Do dziaÅ‚ania bibliotek potrzebny jest gpsd.
 
 %package static
 Summary:	Static GPS client library
-Summary(pl):	Statyczna biblioteka kliencka GPS
+Summary(pl.UTF-8):   Statyczna biblioteka kliencka GPS
 Group:		Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
 
 %description static
 Static GPS client library.
 
-%description static -l pl
+%description static -l pl.UTF-8
 Statyczna biblioteka kliencka GPS.
 
 %package clients
 Summary:	Clients for gpsd with an X interface
-Summary(pl):	Aplikacje klienckie z interfejsem X
+Summary(pl.UTF-8):   Aplikacje klienckie z interfejsem X
 Group:		Applications/System
 Requires:	%{name}-libs = %{version}-%{release}
 
@@ -123,18 +123,18 @@ option to dump the package version and exit. Additionally, it accepts
 cgps resembles xgps, but without the pictorial satellite display. It
 can run on a serial terminal or terminal emulator.
 
-%description clients -l pl
-xgps to prosty klient testowy dla gpsd z interfejsem X. Wy¶wietla
-bie¿±ce informacje GPS o po³o¿eniu, czasie i prêdko¶ci oraz (w
-przypadku GPS-ów obs³uguj±cych to) po³o¿enia dostêpnych satelitów.
+%description clients -l pl.UTF-8
+xgps to prosty klient testowy dla gpsd z interfejsem X. WyÅ›wietla
+bieÅ¼Ä…ce informacje GPS o poÅ‚oÅ¼eniu, czasie i prÄ™dkoÅ›ci oraz (w
+przypadku GPS-Ã³w obsÅ‚ugujÄ…cych to) poÅ‚oÅ¼enia dostÄ™pnych satelitÃ³w.
 
-xgpsspeed to prêdko¶ciomierz u¿ywaj±cy informacji o po³o¿eniu z GPS-a.
-Przyjmuje opcjê -h i opcjonalnie argument taki jak gps lub opcjê -v w
-celu wy¶wietlenia wersji pakietu. Ponadto przyjmuje opcje -rv (reverse
+xgpsspeed to prÄ™dkoÅ›ciomierz uÅ¼ywajÄ…cy informacji o poÅ‚oÅ¼eniu z GPS-a.
+Przyjmuje opcjÄ™ -h i opcjonalnie argument taki jak gps lub opcjÄ™ -v w
+celu wyÅ›wietlenia wersji pakietu. Ponadto przyjmuje opcje -rv (reverse
 video - odwrotny obraz) i -nc (needle color).
 
 cgps jest podobny do xgps, ale bez rysunkowego przedstawiania
-satelitów. Mo¿e dzia³aæ na terminalu szeregowym lub emulatorze
+satelitÃ³w. MoÅ¼e dziaÅ‚aÄ‡ na terminalu szeregowym lub emulatorze
 terminala.
 
 %prep
