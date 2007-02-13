@@ -6,7 +6,7 @@
 %bcond_with	dbus	# build with dbus support
 #
 Summary:	Service daemon for mediating access to a GPS
-Summary(pl.UTF-8):   Oprogramowanie komunikujące się z GPS-em
+Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.33
 Release:	1.1
@@ -67,7 +67,7 @@ ponownym podłączaniem GPS-a.
 
 %package libs
 Summary:	GPS client library
-Summary(pl.UTF-8):   Biblioteka kliencka GPS
+Summary(pl.UTF-8):	Biblioteka kliencka GPS
 Group:		Libraries
 
 %description libs
@@ -78,7 +78,7 @@ Biblioteka kliencka GPS.
 
 %package devel
 Summary:	Client libraries in C and Python for talking to a running gpsd or GPS
-Summary(pl.UTF-8):   Biblioteki klienckie dla C i Pythona do komunikacji z gpsd lub GPS-em
+Summary(pl.UTF-8):	Biblioteki klienckie dla C i Pythona do komunikacji z gpsd lub GPS-em
 Group:		Development/Libraries
 Requires:	%{name}-libs = %{version}-%{release}
 
@@ -94,7 +94,7 @@ Pythona. Do działania bibliotek potrzebny jest gpsd.
 
 %package static
 Summary:	Static GPS client library
-Summary(pl.UTF-8):   Statyczna biblioteka kliencka GPS
+Summary(pl.UTF-8):	Statyczna biblioteka kliencka GPS
 Group:		Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
 
@@ -106,7 +106,7 @@ Statyczna biblioteka kliencka GPS.
 
 %package clients
 Summary:	Clients for gpsd with an X interface
-Summary(pl.UTF-8):   Aplikacje klienckie z interfejsem X
+Summary(pl.UTF-8):	Aplikacje klienckie z interfejsem X
 Group:		Applications/System
 Requires:	%{name}-libs = %{version}-%{release}
 
