@@ -16,7 +16,6 @@ Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
 # Source0-md5:	03b57754091e4a34e27c78e1dc35c55e
 Patch0:		%{name}-ncurses.patch
 URL:		http://gpsd.berlios.de/
-BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
 %if %{with dbus}
@@ -25,6 +24,7 @@ BuildRequires:	dbus-glib-devel
 %endif
 BuildRequires:	ncurses-devel
 BuildRequires:	openmotif-devel
+BuildRequires:	xorg-lib-libXaw-devel
 Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
