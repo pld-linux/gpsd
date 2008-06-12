@@ -4,7 +4,7 @@
 #	- fix pysitedir???
 #	
 # Conditional build:
-%bcond_without	dbus	# build with dbus support
+%bcond_without	dbus	# build without dbus support
 #
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
@@ -29,7 +29,7 @@ BuildRequires:	xorg-lib-libXaw-devel
 Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_appdefsdir	/usr/lib/X11/app-defaults
+%define		_appdefsdir	/usr/share/X11/app-defaults
 
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
@@ -110,6 +110,7 @@ Summary:	Clients for gpsd with an X interface
 Summary(pl.UTF-8):	Aplikacje klienckie z interfejsem X
 Group:		Applications/System
 Requires:	%{name}-libs = %{version}-%{release}
+Requires:	xorg-lib-libXt >= 1.0.0
 
 %description clients
 xgps is a simple test client for gpsd with an X interface. It displays
@@ -228,7 +229,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/cgpxlogger
 %attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gpspipe
-%{?with_dbus: %attr(755,root,root) %{_bindir}/gpxlogger}
+%{?with_dbus:%attr(755,root,root) %{_bindir}/gpxlogger}
 %{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsctl.1*
 %{_mandir}/man1/xgps.1*
