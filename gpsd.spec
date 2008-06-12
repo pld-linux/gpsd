@@ -1,19 +1,20 @@
-# TODO
-# - at this time package do not build with dbus support
-#   I do not need it ...
 #
+# TODO:
+#	- integrate udev stuff from Debian (die hotplug, die!)
+#	- fix pysitedir???
+#	
 # Conditional build:
-%bcond_with	dbus	# build with dbus support
+%bcond_without	dbus	# build with dbus support
 #
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	2.33
-Release:	1.1
+Version:	2.37
+Release:	0.1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	03b57754091e4a34e27c78e1dc35c55e
+# Source0-md5:	6c96cc0b2df0279cb7baac1ebc5881d3
 Patch0:		%{name}-ncurses.patch
 URL:		http://gpsd.berlios.de/
 BuildRequires:	autoconf
@@ -28,7 +29,7 @@ BuildRequires:	xorg-lib-libXaw-devel
 Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_appdefsdir	/usr/X11R6/lib/X11/app-defaults
+%define		_appdefsdir	/usr/lib/X11/app-defaults
 
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
@@ -66,15 +67,15 @@ spokojnie kiedy nie ma klientów i radzi sobie dobrze z odłączaniem i
 ponownym podłączaniem GPS-a.
 
 %package libs
-Summary:	GPS client library
-Summary(pl.UTF-8):	Biblioteka kliencka GPS
+Summary:	GPSd client library
+Summary(pl.UTF-8):	Biblioteka kliencka GPSd
 Group:		Libraries
 
 %description libs
-GPS client library.
+GPSd client library.
 
 %description libs -l pl.UTF-8
-Biblioteka kliencka GPS.
+Biblioteka kliencka GPSd.
 
 %package devel
 Summary:	Client libraries in C and Python for talking to a running gpsd or GPS
@@ -142,6 +143,7 @@ terminala.
 %patch0 -p1
 
 %build
+%{__libtoolize}
 %{__aclocal}
 %{__autoconf}
 %{__autoheader}
@@ -150,17 +152,17 @@ terminala.
 	%{?with_dbus:--enable-dbus}
 
 %{__make}
-%{__python} -c "import compiler;compiler.compileFile('gps.py')"
-%{__python} -c "import compiler;compiler.compileFile('gpsfake.py')"
+#%{__python} -c "import compiler;compiler.compileFile('gps.py')"
+#%{__python} -c "import compiler;compiler.compileFile('gpsfake.py')"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_sysconfdir}/hotplug/usb,%{py_sitedir},%{_appdefsdir},%{_datadir}/gpsd}
+install -d $RPM_BUILD_ROOT{%{_sysconfdir}/hotplug/usb,%{py_sitedir},%{_appdefsdir},%{_datadir}/%{name}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-install gps.pyc gpsfake.pyc $RPM_BUILD_ROOT%{py_sitedir}
+#install gps.pyc gpsfake.pyc $RPM_BUILD_ROOT%{py_sitedir}
 install gpsd.hotplug gpsd.usermap $RPM_BUILD_ROOT%{_sysconfdir}/hotplug/usb
 install xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
 install xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
@@ -174,7 +176,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc README INSTALL COPYING TODO AUTHORS HACKING
+%doc README INSTALL COPYING TODO AUTHORS
 %attr(755,root,root) %{_sbindir}/gpsd
 %attr(755,root,root) %{_bindir}/gpsprof
 %attr(755,root,root) %{_bindir}/sirfmon
@@ -183,9 +185,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/sirfmon.1*
 %{_sysconfdir}/hotplug/usb/gpsd.hotplug
 %{_sysconfdir}/hotplug/usb/gpsd.usermap
+%dir %{_datadir}/%{name}
 %{_datadir}/gpsd/dgpsip-servers
-%{py_sitedir}/gps.pyc
-
+#%{py_sitedir}/gps.pyc
+%{_pkgconfigdir}/libgps.pc
+%{_pkgconfigdir}/libgpsd.pc
+ 
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
@@ -197,7 +202,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpsflash
 %attr(755,root,root) %{_libdir}/libgps.so
 %{_libdir}/libgps.la
-%{py_sitedir}/gpsfake.pyc
+#%{py_sitedir}/gpsfake.pyc
 %{_includedir}/gps.h
 %{_includedir}/libgpsmm.h
 %{_includedir}/gpsd.h
@@ -216,18 +221,21 @@ rm -rf $RPM_BUILD_ROOT
 
 %files clients
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/gpscat
+%attr(755,root,root) %{_bindir}/gpsctl
 %attr(755,root,root) %{_bindir}/xgps
 %attr(755,root,root) %{_bindir}/xgpsspeed
 %attr(755,root,root) %{_bindir}/cgpxlogger
 %attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gpspipe
 %{?with_dbus: %attr(755,root,root) %{_bindir}/gpxlogger}
+%{_mandir}/man1/gpscat.1*
+%{_mandir}/man1/gpsctl.1*
 %{_mandir}/man1/xgps.1*
 %{_mandir}/man1/cgps.1*
 %{_mandir}/man1/cgpxlogger.1*
 %{_mandir}/man1/gps.1*
 %{_mandir}/man1/xgpsspeed.1*
 %{_mandir}/man1/gpspipe.1*
-%{?with_dbus: %{_mandir}/man1/gpxlogger.1*}
 %{_appdefsdir}/xgps
 %{_appdefsdir}/xgpsspeed
