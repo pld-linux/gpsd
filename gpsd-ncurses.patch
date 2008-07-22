@@ -1,18 +1,22 @@
 diff -durN gpsd-2.37.orig/cgps.c gpsd-2.37/cgps.c
 --- gpsd-2.37.orig/cgps.c	2007-12-13 06:35:30.000000000 +0100
-+++ gpsd-2.37/cgps.c	2008-07-22 09:49:54.000000000 +0200
-@@ -97,7 +97,7 @@
++++ gpsd-2.37/cgps.c	2008-07-22 09:56:57.000000000 +0200
+@@ -96,11 +96,7 @@
+ #include <signal.h>
  
  #include "gpsd_config.h"
- #ifdef HAVE_NCURSES_H
+-#ifdef HAVE_NCURSES_H
 -#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
 +#include <ncurses/ncurses.h>
- #else
- #include <curses.h>
- #endif /* HAVE_NCURSES_H */
+ 
+ #include "gps.h"
+ 
 diff -durN gpsd-2.37.orig/configure.ac gpsd-2.37/configure.ac
 --- gpsd-2.37.orig/configure.ac	2008-02-17 03:26:37.000000000 +0100
-+++ gpsd-2.37/configure.ac	2008-07-22 09:51:03.000000000 +0200
++++ gpsd-2.37/configure.ac	2008-07-22 09:56:17.000000000 +0200
 @@ -88,7 +88,7 @@
  #include netinet/ip.h
  #endif
@@ -33,13 +37,18 @@ diff -durN gpsd-2.37.orig/configure.ac gpsd-2.37/configure.ac
  if test x"$ac_ncurses_lib" = "xyes" -a x"$ac_ncurses" = "xno" ; then
 diff -durN gpsd-2.37.orig/sirfmon.c gpsd-2.37/sirfmon.c
 --- gpsd-2.37.orig/sirfmon.c	2007-06-26 20:54:32.000000000 +0200
-+++ gpsd-2.37/sirfmon.c	2008-07-22 09:49:26.000000000 +0200
-@@ -43,7 +43,7 @@
++++ gpsd-2.37/sirfmon.c	2008-07-22 09:57:32.000000000 +0200
+@@ -42,11 +42,8 @@
+ #include <stdbool.h>
  
  #include "gpsd_config.h"
- #ifdef HAVE_NCURSES_H
+-#ifdef HAVE_NCURSES_H
 -#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
 +#include <ncurses/ncurses.h>
- #else
- #include <curses.h>
- #endif /* HAVE_NCURSES_H */
++
+ #include "gps.h"	/* for DEFAULT_GPSD_PORT; brings in PI as well */
+ 
+ #define PUT_ORIGIN	-4
