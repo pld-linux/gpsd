@@ -1,24 +1,45 @@
-diff -uNr gpsd-2.30.orig/cgps.c gpsd-2.30/cgps.c
---- gpsd-2.30.orig/cgps.c	2005-09-07 00:59:45.000000000 +0200
-+++ gpsd-2.30/cgps.c	2005-11-28 10:39:18.685053448 +0100
-@@ -32,7 +32,7 @@
- #include <sys/select.h>
- #include <sys/socket.h>
+diff -durN gpsd-2.37.orig/cgps.c gpsd-2.37/cgps.c
+--- gpsd-2.37.orig/cgps.c	2007-12-13 06:35:30.000000000 +0100
++++ gpsd-2.37/cgps.c	2008-07-22 09:49:54.000000000 +0200
+@@ -97,7 +97,7 @@
  
--#include <ncurses.h>                                                         
-+#include <ncurses/ncurses.h>                                                         
- #include <signal.h>
+ #include "gpsd_config.h"
+ #ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
++#include <ncurses/ncurses.h>
+ #else
+ #include <curses.h>
+ #endif /* HAVE_NCURSES_H */
+diff -durN gpsd-2.37.orig/configure.ac gpsd-2.37/configure.ac
+--- gpsd-2.37.orig/configure.ac	2008-02-17 03:26:37.000000000 +0100
++++ gpsd-2.37/configure.ac	2008-07-22 09:51:03.000000000 +0200
+@@ -88,7 +88,7 @@
+ #include netinet/ip.h
+ #endif
+ ]])
+-AC_CHECK_HEADERS(termios.h strings.h ncurses.h getopt.h netdb.h)
++AC_CHECK_HEADERS(termios.h strings.h ncurses/ncurses.h getopt.h netdb.h)
  
- #include "gps.h"
-diff -uNr gpsd-2.30.orig/sirfmon.c gpsd-2.30/sirfmon.c
---- gpsd-2.30.orig/sirfmon.c	2005-07-31 18:22:48.000000000 +0200
-+++ gpsd-2.30/sirfmon.c	2005-11-28 10:39:32.264988984 +0100
-@@ -23,7 +23,7 @@
-  * so it deliberately doesn't use much of the library. 
-  */
- #include <stdio.h>
--#include <curses.h>
-+#include <ncurses/curses.h>
- #include <stdlib.h>
- #include <string.h>
- #include <math.h>
+ AC_CHECK_FUNCS(round, roundf)
+ AC_CHECK_FUNCS(strlcpy)
+@@ -237,7 +237,7 @@
+ fi
+ dnl End of X11 checks
+ 
+-AC_CHECK_HEADER(ncurses.h, ac_ncurses='yes', ac_ncurses='no')
++AC_CHECK_HEADER(ncurses/ncurses.h, ac_ncurses='yes', ac_ncurses='no')
+ AM_CONDITIONAL([HAVE_NCURSES], [test x"$ac_ncurses" = "xyes"])
+ AC_CHECK_LIB(ncurses, initscr, ac_ncurses_lib='yes', ac_ncurses_lib='no')
+ if test x"$ac_ncurses_lib" = "xyes" -a x"$ac_ncurses" = "xno" ; then
+diff -durN gpsd-2.37.orig/sirfmon.c gpsd-2.37/sirfmon.c
+--- gpsd-2.37.orig/sirfmon.c	2007-06-26 20:54:32.000000000 +0200
++++ gpsd-2.37/sirfmon.c	2008-07-22 09:49:26.000000000 +0200
+@@ -43,7 +43,7 @@
+ 
+ #include "gpsd_config.h"
+ #ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
++#include <ncurses/ncurses.h>
+ #else
+ #include <curses.h>
+ #endif /* HAVE_NCURSES_H */
