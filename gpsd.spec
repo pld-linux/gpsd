@@ -237,9 +237,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n python-gps
 %defattr(644,root,root,755)
-%{py_sitescriptdir}/*.pyc
-%{py_sitescriptdir}/*.pyo
-%{py_sitedir}/*.so
+%{py_sitescriptdir}/*.py[co]
+%attr(755,root,root) %{py_sitedir}/*.so
 
 %files clients
 %defattr(644,root,root,755)
