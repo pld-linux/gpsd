@@ -25,6 +25,8 @@ BuildRequires:	dbus-glib-devel
 %endif
 BuildRequires:	ncurses-devel
 BuildRequires:	openmotif-devel
+BuildRequires:	python-devel
+BuildRequires:	rpm-pythonprov
 BuildRequires:	xorg-lib-libXaw-devel
 Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -105,6 +107,18 @@ Static GPS client library.
 %description static -l pl.UTF-8
 Statyczna biblioteka kliencka GPS.
 
+%package -n python-gps
+Summary:	Python GPSd client library
+Summary(pl.UTF-8):	Biblioteka kliencka GPSd dla Pythona
+Group:		Libraries/Python
+Requires:	%{name}-libs = %{version}-%{release}
+
+%description -n python-gps
+GPSd client library for Python.
+
+%description -n python-gps -l pl.UTF-8
+Biblioteka kliencka GPSd dla Pythona.
+
 %package clients
 Summary:	Clients for gpsd with an X interface
 Summary(pl.UTF-8):	Aplikacje klienckie z interfejsem X
@@ -153,21 +167,24 @@ terminala.
 	%{?with_dbus:--enable-dbus}
 
 %{__make}
-#%{__python} -c "import compiler;compiler.compileFile('gps.py')"
-#%{__python} -c "import compiler;compiler.compileFile('gpsfake.py')"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_sysconfdir}/hotplug/usb,%{py_sitedir},%{_appdefsdir},%{_datadir}/%{name}}
+install -d $RPM_BUILD_ROOT{%{_sysconfdir}/hotplug/usb,%{_appdefsdir},%{py_sitedir},%{_datadir}/%{name}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-#install gps.pyc gpsfake.pyc $RPM_BUILD_ROOT%{py_sitedir}
 install gpsd.hotplug gpsd.usermap $RPM_BUILD_ROOT%{_sysconfdir}/hotplug/usb
 install xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
 install xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
+
+rm -f $RPM_BUILD_ROOT%{_libdir}/libgps.so.[0-9][0-9]
+
+mv $RPM_BUILD_ROOT%{py_sitescriptdir}/*.so $RPM_BUILD_ROOT%{py_sitedir}
+
+%py_postclean
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -188,7 +205,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/hotplug/usb/gpsd.usermap
 %dir %{_datadir}/%{name}
 %{_datadir}/gpsd/dgpsip-servers
-#%{py_sitedir}/gps.pyc
 %{_pkgconfigdir}/libgps.pc
 %{_pkgconfigdir}/libgpsd.pc
  
@@ -203,7 +219,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpsflash
 %attr(755,root,root) %{_libdir}/libgps.so
 %{_libdir}/libgps.la
-#%{py_sitedir}/gpsfake.pyc
 %{_includedir}/gps.h
 %{_includedir}/libgpsmm.h
 %{_includedir}/gpsd.h
@@ -219,6 +234,12 @@ rm -rf $RPM_BUILD_ROOT
 %files static
 %defattr(644,root,root,755)
 %{_libdir}/libgps.a
+
+%files -n python-gps
+%defattr(644,root,root,755)
+%{py_sitescriptdir}/*.pyc
+%{py_sitescriptdir}/*.pyo
+%{py_sitedir}/*.so
 
 %files clients
 %defattr(644,root,root,755)
