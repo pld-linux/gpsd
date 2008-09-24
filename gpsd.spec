@@ -5,17 +5,19 @@
 #	
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
+%bcond_without	x	# build without X Window support
 #
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.37
-Release:	0.1
+Release:	0.8
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
 # Source0-md5:	6c96cc0b2df0279cb7baac1ebc5881d3
 Patch0:		%{name}-ncurses.patch
+Patch1:		%{name}-udev.patch
 URL:		http://gpsd.berlios.de/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -24,14 +26,17 @@ BuildRequires:	dbus-devel
 BuildRequires:	dbus-glib-devel
 %endif
 BuildRequires:	ncurses-devel
+%if %{with x}
 BuildRequires:	openmotif-devel
+BuildRequires:	xorg-lib-libXaw-devel
+%endif
 BuildRequires:	python-devel
 BuildRequires:	rpm-pythonprov
-BuildRequires:	xorg-lib-libXaw-devel
 Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_appdefsdir	/usr/share/X11/app-defaults
+%define		udevdir		/%{_lib}/udev
 
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
@@ -124,9 +129,12 @@ Summary:	Clients for gpsd with an X interface
 Summary(pl.UTF-8):	Aplikacje klienckie z interfejsem X
 Group:		Applications/System
 Requires:	%{name}-libs = %{version}-%{release}
+%if %{with x}
 Requires:	xorg-lib-libXt >= 1.0.0
+%endif
 
 %description clients
+%if %{with x}
 xgps is a simple test client for gpsd with an X interface. It displays
 current GPS position/time/velocity information and (for GPSes that
 support the feature) the locations of accessible satellites.
@@ -135,7 +143,7 @@ xgpsspeed is a speedometer that uses position information from the
 GPS. It accepts an -h option and optional argument as for gps, or a -v
 option to dump the package version and exit. Additionally, it accepts
 -rv (reverse video) and -nc (needle color) options.
-
+%endif
 cgps resembles xgps, but without the pictorial satellite display. It
 can run on a serial terminal or terminal emulator.
 
@@ -156,6 +164,7 @@ terminala.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
 %{__libtoolize}
@@ -164,18 +173,26 @@ terminala.
 %{__autoheader}
 %{__automake}
 %configure \
-	%{?with_dbus:--enable-dbus}
+	%{?with_dbus:--enable-dbus} \
+	%{?without_x:--without-x}
 
 %{__make}
+
+sed -i 's#/lib/#/%{_lib}/#g' gpsd.hotplug 
+sed -i 's#/lib/#/%{_lib}/#g' gpsd.hotplug.wrapper
+sed -i 's#/lib/#/%{_lib}/#g' gpsd.udev
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_sysconfdir}/hotplug/usb,%{_appdefsdir},%{py_sitedir},%{_datadir}/%{name}}
+install -d $RPM_BUILD_ROOT{%{udevdir},%{_sysconfdir}/{udev/rules.d,sysconfig}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-install gpsd.hotplug gpsd.usermap $RPM_BUILD_ROOT%{_sysconfdir}/hotplug/usb
+install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
+install	gpsd.udev $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/25-gpsd.rules
+install	gpsd.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/gpsd
 install xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
 install xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
@@ -201,8 +218,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/gpsd.8*
 %{_mandir}/man1/gpsprof.1*
 %{_mandir}/man1/sirfmon.1*
-%{_sysconfdir}/hotplug/usb/gpsd.hotplug
-%{_sysconfdir}/hotplug/usb/gpsd.usermap
+%{udevdir}/gpsd.hotplug
+%{udevdir}/gpsd.hotplug.wrapper
+%{_sysconfdir}/udev/rules.d/25-gpsd.rules
+%{_sysconfdir}/sysconfig/gpsd
 %dir %{_datadir}/%{name}
 %{_datadir}/gpsd/dgpsip-servers
 %{_pkgconfigdir}/libgps.pc
