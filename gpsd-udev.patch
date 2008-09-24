@@ -1,0 +1,88 @@
+diff -NurpP --minimal gpsd-2.37.orig/gpsd.hotplug gpsd-2.37/gpsd.hotplug
+--- gpsd-2.37.orig/gpsd.hotplug	2007-06-26 20:54:32.000000000 +0200
++++ gpsd-2.37/gpsd.hotplug	2008-09-15 22:16:07.785330941 +0200
+@@ -7,7 +7,7 @@
+ import sys, time, os, syslog, glob, socket, stat
+ 
+ CONTROL_SOCKET = "/var/run/gpsd.sock"
+-WHEREAMI = "/etc/hotplug/usb/gpsd.hotplug"
++WHEREAMI = "/lib/udev/gpsd.hotplug"
+ 
+ def gpsd_control_connect():
+     "Acquire a connection to the GPSD control socket."
+diff -NurpP --minimal gpsd-2.37.orig/gpsd.hotplug.wrapper gpsd-2.37/gpsd.hotplug.wrapper
+--- gpsd-2.37.orig/gpsd.hotplug.wrapper	1970-01-01 01:00:00.000000000 +0100
++++ gpsd-2.37/gpsd.hotplug.wrapper	2008-09-15 22:13:04.628685277 +0200
+@@ -0,0 +1,22 @@
++#! /bin/sh
++# $Id$
++
++#debian addition with a pld twist:
++[ ! -r /etc/sysconfig/gpsd ] || . /etc/sysconfig/gpsd
++[ "$START_DAEMON" = "yes" ] || exit 0
++[ "$USBAUTO" = "yes" ] || exit 0
++
++
++if [ "$ACTION" == "remove" ] ; then
++  if [ $(echo $DEVLINKS | grep -q /dev/gps) ] ; then
++    exec /lib/udev/gpsd.hotplug "$ACTION" "$DEVNAME"
++  fi
++  exit 0
++fi
++
++. /lib/udev/hotplug.functions
++
++# wait for /usr & /var to be mounted
++wait_for_file /usr/bin/python && \
++wait_for_file /var/run && \
++  exec /lib/udev/gpsd.hotplug "$ACTION" "$DEVNAME"
+diff -NurpP --minimal gpsd-2.37.orig/gpsd.udev gpsd-2.37/gpsd.udev
+--- gpsd-2.37.orig/gpsd.udev	1970-01-01 01:00:00.000000000 +0100
++++ gpsd-2.37/gpsd.udev	2008-09-15 22:11:55.875772637 +0200
+@@ -0,0 +1,39 @@
++# udev rules for gpsd
++# $Id$
++#
++# GPSes don't have their own USB device class.  They're serial-over-USB
++# devices, so what you see is actually the ID of the serial-over-USB chip.
++# Fortunately, just two of these account for over 80% of consumer-grade
++# GPS sensors.  The gpsd.hotplug.wrapper script will tell a running gpsd
++# that it should look at the device that just went active, because it
++# might be a GPS.
++#
++# The following setup works on Debian - something similar will apply on
++# other distributions:
++#
++#   /etc/udev/gpsd.rules
++#   /etc/udev/rules.d/025_gpsd.rules -> ../gpsd.rules
++#   /lib/udev/gpsd.hotplug.wrapper
++#   /lib/udev/gpsd.hotplug
++#
++# Setting the link in /etc/udev/rules.d activates the rule and determines
++# when to run it on boot (similar to init.d processing).
++
++SUBSYSTEM!="tty", GOTO="gpsd_rules_end"
++
++# Prolific Technology, Inc. PL2303 Serial Port
++SYSFS{idVendor}=="067b", SYSFS{idProduct}=="2303", SYMLINK="gps%n", RUN+="/lib/udev/gpsd.hotplug.wrapper"
++# ATEN International Co., Ltd UC-232A Serial Port [pl2303]
++SYSFS{idVendor}=="0557", SYSFS{idProduct}=="2008", SYMLINK="gps%n", RUN+="/lib/udev/gpsd.hotplug.wrapper"
++# FTDI 8U232AM
++SYSFS{idVendor}=="0403", SYSFS{idProduct}=="6001", SYMLINK="gps%n", RUN+="/lib/udev/gpsd.hotplug.wrapper"
++# Cypress M8/CY7C64013 (DeLorme uses these)
++SYSFS{idVendor}=="1163", SYSFS{idProduct}=="0100", SYMLINK="gps%n", RUN+="/lib/udev/gpsd.hotplug.wrapper"
++# PS-360 OEM (Microsoft GPS sold with Street and Trips 2005)
++SYSFS{idVendor}=="067b", SYSFS{idProduct}=="aaa0", SYMLINK="gps%n", RUN+="/lib/udev/gpsd.hotplug.wrapper"
++# Garmin International GPSmap, various models (tested with Garmin GPS 18 USB)
++SYSFS{idVendor}=="091e", SYSFS{idProduct}=="0003", SYMLINK="gps%n", RUN+="/lib/udev/gpsd.hotplug.wrapper"
++
++ACTION=="remove", RUN+="/lib/udev/gpsd.hotplug.wrapper"
++
++LABEL="gpsd_rules_end"
+--- gpsd-2.37.orig/gpsd.sysconfig	1970-01-01 01:00:00.000000000 +0100
++++ gpsd-2.37/gpsd.sysconfig	2008-09-15 23:34:54.671941394 +0200
+@@ -0,0 +1,4 @@
++START_DAEMON="yes"
++DAEMON_OPTS=""
++DEVICES=""
++USBAUTO="yes"
