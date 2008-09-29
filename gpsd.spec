@@ -1,6 +1,5 @@
 #
 # TODO:
-#	- integrate udev stuff from Debian (die hotplug, die!)
 #	- fix pysitedir???
 #	
 # Conditional build:
@@ -125,41 +124,46 @@ GPSd client library for Python.
 Biblioteka kliencka GPSd dla Pythona.
 
 %package clients
+Summary:	Clients for gpsd
+Summary(pl.UTF-8):	Aplikacje klienckie dla gpsd
+Group:		Applications/System
+Requires:	%{name}-libs = %{version}-%{release}
+
+%description clients
+cgps is a simple test client for gpsd. It displays current GPS
+position/time/velocity information and (for GPSes that support the
+feature) the locations of accessible satellites. cgps resembles xgps,
+but without the pictorial satellite display. It can run on a serial
+terminal or terminal emulator.
+
+%description clients -l pl.UTF-8
+cgps to prosty klient testowy dla gpsd. Wyświetla bieżące informacje
+GPS o położeniu, czasie i prędkości oraz (w przypadku GPS-ów
+obsługujących to) położenia dostępnych satelitów. Jest podobny do
+xgps, ale nie ma rysunkowego przedstawiania satelitów. Może działać na
+terminalu szeregowym lub emulatorze terminala.
+
+%package clients-gui
 Summary:	Clients for gpsd with an X interface
 Summary(pl.UTF-8):	Aplikacje klienckie z interfejsem X
 Group:		Applications/System
 Requires:	%{name}-libs = %{version}-%{release}
-%if %{with x}
 Requires:	xorg-lib-libXt >= 1.0.0
-%endif
 
-%description clients
-%if %{with x}
+%description clients-gui
 xgps is a simple test client for gpsd with an X interface. It displays
 current GPS position/time/velocity information and (for GPSes that
 support the feature) the locations of accessible satellites.
 
 xgpsspeed is a speedometer that uses position information from the
-GPS. It accepts an -h option and optional argument as for gps, or a -v
-option to dump the package version and exit. Additionally, it accepts
--rv (reverse video) and -nc (needle color) options.
-%endif
-cgps resembles xgps, but without the pictorial satellite display. It
-can run on a serial terminal or terminal emulator.
+GPS.
 
-%description clients -l pl.UTF-8
+%description clients-gui -l pl.UTF-8
 xgps to prosty klient testowy dla gpsd z interfejsem X. Wyświetla
 bieżące informacje GPS o położeniu, czasie i prędkości oraz (w
 przypadku GPS-ów obsługujących to) położenia dostępnych satelitów.
 
 xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
-Przyjmuje opcję -h i opcjonalnie argument taki jak gps lub opcję -v w
-celu wyświetlenia wersji pakietu. Ponadto przyjmuje opcje -rv (reverse
-video - odwrotny obraz) i -nc (needle color).
-
-cgps jest podobny do xgps, ale bez rysunkowego przedstawiania
-satelitów. Może działać na terminalu szeregowym lub emulatorze
-terminala.
 
 %prep
 %setup -q
@@ -174,7 +178,7 @@ terminala.
 %{__automake}
 %configure \
 	%{?with_dbus:--enable-dbus} \
-	%{?without_x:--without-x}
+	%{!?with_x:--without-x}
 
 %{__make}
 
@@ -184,7 +188,7 @@ sed -i 's#/lib/#/%{_lib}/#g' gpsd.udev
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_appdefsdir},%{py_sitedir},%{_datadir}/%{name}}
+install -d $RPM_BUILD_ROOT{%{py_sitedir},%{_datadir}/%{name}}
 install -d $RPM_BUILD_ROOT{%{udevdir},/etc/{udev/rules.d,sysconfig}}
 
 %{__make} install \
@@ -193,11 +197,12 @@ install -d $RPM_BUILD_ROOT{%{udevdir},/etc/{udev/rules.d,sysconfig}}
 install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
 install	gpsd.udev $RPM_BUILD_ROOT/etc/udev/rules.d/25-gpsd.rules
 install	gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
-install xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
-install xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
 
-rm -f $RPM_BUILD_ROOT%{_libdir}/libgps.so.[0-9][0-9]
+%if %{with x}
+install -D xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
+install -D xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
+%endif
 
 mv $RPM_BUILD_ROOT%{py_sitescriptdir}/*.so $RPM_BUILD_ROOT%{py_sitedir}
 
@@ -213,10 +218,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc README INSTALL COPYING TODO AUTHORS
 %attr(755,root,root) %{_sbindir}/gpsd
-%attr(755,root,root) %{_bindir}/gpsprof
 %attr(755,root,root) %{_bindir}/sirfmon
 %{_mandir}/man8/gpsd.8*
-%{_mandir}/man1/gpsprof.1*
 %{_mandir}/man1/sirfmon.1*
 %{udevdir}/gpsd.hotplug
 %{udevdir}/gpsd.hotplug.wrapper
@@ -228,25 +231,24 @@ rm -rf $RPM_BUILD_ROOT
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgps.so.17
 
 %files devel
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/gpsfake
-%attr(755,root,root) %{_bindir}/rtcmdecode
 %attr(755,root,root) %{_bindir}/gpsflash
+%attr(755,root,root) %{_bindir}/rtcmdecode
 %attr(755,root,root) %{_libdir}/libgps.so
 %{_libdir}/libgps.la
 %{_includedir}/gps.h
-%{_includedir}/libgpsmm.h
 %{_includedir}/gpsd.h
+%{_includedir}/libgpsmm.h
 %{_pkgconfigdir}/libgps.pc
 %{_pkgconfigdir}/libgpsd.pc
-%{_mandir}/man1/gpsfake.1*
-%{_mandir}/man1/rtcmdecode.1*
 %{_mandir}/man1/gpsflash.1*
+%{_mandir}/man1/rtcmdecode.1*
 %{_mandir}/man3/libgps.3*
-%{_mandir}/man3/libgpsmm.3*
 %{_mandir}/man3/libgpsd.3*
+%{_mandir}/man3/libgpsmm.3*
 %{_mandir}/man5/rtcm-104.5*
 %{_mandir}/man5/srec.5*
 
@@ -256,26 +258,36 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n python-gps
 %defattr(644,root,root,755)
-%{py_sitescriptdir}/*.py[co]
-%attr(755,root,root) %{py_sitedir}/*.so
+%attr(755,root,root) %{_bindir}/gpscat
+%attr(755,root,root) %{_bindir}/gpsfake
+%attr(755,root,root) %{_bindir}/gpsprof
+%{py_sitescriptdir}/gps.py[co]
+%{py_sitescriptdir}/gpsfake.py[co]
+%attr(755,root,root) %{py_sitedir}/gpspacket.so
+%{_mandir}/man1/gpscat.1*
+%{_mandir}/man1/gpsfake.1*
+%{_mandir}/man1/gpsprof.1*
 
 %files clients
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/gpscat
 %attr(755,root,root) %{_bindir}/gpsctl
-%attr(755,root,root) %{_bindir}/xgps
-%attr(755,root,root) %{_bindir}/xgpsspeed
 %attr(755,root,root) %{_bindir}/cgpxlogger
 %attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gpspipe
 %{?with_dbus:%attr(755,root,root) %{_bindir}/gpxlogger}
-%{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsctl.1*
-%{_mandir}/man1/xgps.1*
 %{_mandir}/man1/cgps.1*
 %{_mandir}/man1/cgpxlogger.1*
 %{_mandir}/man1/gps.1*
-%{_mandir}/man1/xgpsspeed.1*
 %{_mandir}/man1/gpspipe.1*
+
+%if %{with x}
+%files clients-gui
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/xgps
+%attr(755,root,root) %{_bindir}/xgpsspeed
 %{_appdefsdir}/xgps
 %{_appdefsdir}/xgpsspeed
+%{_mandir}/man1/xgps.1*
+%{_mandir}/man1/xgpsspeed.1*
+%endif
