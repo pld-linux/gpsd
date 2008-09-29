@@ -5,7 +5,7 @@
 #	
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
-%bcond_without	x	# build without X Window support
+%bcond_without	x	# build without X Window System support
 #
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
@@ -184,15 +184,15 @@ sed -i 's#/lib/#/%{_lib}/#g' gpsd.udev
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_sysconfdir}/hotplug/usb,%{_appdefsdir},%{py_sitedir},%{_datadir}/%{name}}
-install -d $RPM_BUILD_ROOT{%{udevdir},%{_sysconfdir}/{udev/rules.d,sysconfig}}
+install -d $RPM_BUILD_ROOT{%{_appdefsdir},%{py_sitedir},%{_datadir}/%{name}}
+install -d $RPM_BUILD_ROOT{%{udevdir},/etc/{udev/rules.d,sysconfig}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
 install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
-install	gpsd.udev $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/25-gpsd.rules
-install	gpsd.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/gpsd
+install	gpsd.udev $RPM_BUILD_ROOT/etc/udev/rules.d/25-gpsd.rules
+install	gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
 install xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
 install xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
@@ -220,12 +220,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/sirfmon.1*
 %{udevdir}/gpsd.hotplug
 %{udevdir}/gpsd.hotplug.wrapper
-%{_sysconfdir}/udev/rules.d/25-gpsd.rules
-%{_sysconfdir}/sysconfig/gpsd
+/etc/udev/rules.d/25-gpsd.rules
+/etc/sysconfig/gpsd
 %dir %{_datadir}/%{name}
 %{_datadir}/gpsd/dgpsip-servers
-%{_pkgconfigdir}/libgps.pc
-%{_pkgconfigdir}/libgpsd.pc
  
 %files libs
 %defattr(644,root,root,755)
@@ -241,6 +239,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/gps.h
 %{_includedir}/libgpsmm.h
 %{_includedir}/gpsd.h
+%{_pkgconfigdir}/libgps.pc
+%{_pkgconfigdir}/libgpsd.pc
 %{_mandir}/man1/gpsfake.1*
 %{_mandir}/man1/rtcmdecode.1*
 %{_mandir}/man1/gpsflash.1*
