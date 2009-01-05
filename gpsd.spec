@@ -1,7 +1,7 @@
 #
 # TODO:
 #	- fix pysitedir???
-#	
+#
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
 %bcond_without	x	# build without X Window System support
@@ -10,7 +10,7 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.37
-Release:	0.8
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
@@ -32,10 +32,11 @@ BuildRequires:	xorg-lib-libXaw-devel
 BuildRequires:	python-devel
 BuildRequires:	rpm-pythonprov
 Requires:	%{name}-libs = %{version}-%{release}
+Requires:	udev-core >= 1:127
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_appdefsdir	/usr/share/X11/app-defaults
-%define		udevdir		/%{_lib}/udev
+%define		udevdir		/lib/udev
 
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
@@ -182,10 +183,6 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 
 %{__make}
 
-sed -i 's#/lib/#/%{_lib}/#g' gpsd.hotplug 
-sed -i 's#/lib/#/%{_lib}/#g' gpsd.hotplug.wrapper
-sed -i 's#/lib/#/%{_lib}/#g' gpsd.udev
-
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{py_sitedir},%{_datadir}/%{name}}
@@ -224,10 +221,10 @@ rm -rf $RPM_BUILD_ROOT
 %{udevdir}/gpsd.hotplug
 %{udevdir}/gpsd.hotplug.wrapper
 /etc/udev/rules.d/25-gpsd.rules
-/etc/sysconfig/gpsd
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
 %dir %{_datadir}/%{name}
 %{_datadir}/gpsd/dgpsip-servers
- 
+
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
