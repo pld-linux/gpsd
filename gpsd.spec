@@ -9,12 +9,12 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	2.37
+Version:	2.39
 Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	6c96cc0b2df0279cb7baac1ebc5881d3
+# Source0-md5:	3db437196a6840c252fca99b6c19d4d0
 Patch0:		%{name}-ncurses.patch
 Patch1:		%{name}-udev.patch
 URL:		http://gpsd.berlios.de/
@@ -215,9 +215,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc README INSTALL COPYING TODO AUTHORS
 %attr(755,root,root) %{_sbindir}/gpsd
-%attr(755,root,root) %{_bindir}/sirfmon
+%attr(755,root,root) %{_bindir}/gpsmon
 %{_mandir}/man8/gpsd.8*
-%{_mandir}/man1/sirfmon.1*
+%{_mandir}/man1/gpsmon.1*
 %{udevdir}/gpsd.hotplug
 %{udevdir}/gpsd.hotplug.wrapper
 /etc/udev/rules.d/25-gpsd.rules
@@ -228,12 +228,12 @@ rm -rf $RPM_BUILD_ROOT
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgps.so.17
+%attr(755,root,root) %ghost %{_libdir}/libgps.so.18
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/gpsflash
-%attr(755,root,root) %{_bindir}/rtcmdecode
+%attr(755,root,root) %{_bindir}/gpsdecode
 %attr(755,root,root) %{_libdir}/libgps.so
 %{_libdir}/libgps.la
 %{_includedir}/gps.h
@@ -242,7 +242,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_pkgconfigdir}/libgps.pc
 %{_pkgconfigdir}/libgpsd.pc
 %{_mandir}/man1/gpsflash.1*
-%{_mandir}/man1/rtcmdecode.1*
+%{_mandir}/man1/gpsdecode.1*
 %{_mandir}/man3/libgps.3*
 %{_mandir}/man3/libgpsd.3*
 %{_mandir}/man3/libgpsmm.3*
@@ -259,7 +259,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpsfake
 %attr(755,root,root) %{_bindir}/gpsprof
 %{py_sitescriptdir}/gps.py[co]
+%{py_sitescriptdir}/gpscap.py[co]
 %{py_sitescriptdir}/gpsfake.py[co]
+%attr(755,root,root) %{py_sitedir}/gpslib.so
 %attr(755,root,root) %{py_sitedir}/gpspacket.so
 %{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsfake.1*
@@ -268,7 +270,6 @@ rm -rf $RPM_BUILD_ROOT
 %files clients
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/gpsctl
-%attr(755,root,root) %{_bindir}/cgpxlogger
 %attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gpspipe
 %{?with_dbus:%attr(755,root,root) %{_bindir}/gpxlogger}
@@ -281,6 +282,7 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with x}
 %files clients-gui
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/lcdgps
 %attr(755,root,root) %{_bindir}/xgps
 %attr(755,root,root) %{_bindir}/xgpsspeed
 %{_appdefsdir}/xgps
