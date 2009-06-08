@@ -1,7 +1,7 @@
-diff -durN gpsd-2.37.orig/cgps.c gpsd-2.37/cgps.c
---- gpsd-2.37.orig/cgps.c	2007-12-13 06:35:30.000000000 +0100
-+++ gpsd-2.37/cgps.c	2008-07-22 09:56:57.000000000 +0200
-@@ -96,11 +96,7 @@
+diff -ur gpsd-2.39/cgps.c gpsd-2.39.new/cgps.c
+--- gpsd-2.39/cgps.c	2009-03-18 17:44:54.000000000 +0100
++++ gpsd-2.39.new/cgps.c	2009-06-08 13:39:54.140175509 +0200
+@@ -98,11 +98,7 @@
  #include <signal.h>
  
  #include "gpsd_config.h"
@@ -13,33 +13,26 @@ diff -durN gpsd-2.37.orig/cgps.c gpsd-2.37/cgps.c
 +#include <ncurses/ncurses.h>
  
  #include "gps.h"
- 
-diff -durN gpsd-2.37.orig/configure.ac gpsd-2.37/configure.ac
---- gpsd-2.37.orig/configure.ac	2008-02-17 03:26:37.000000000 +0100
-+++ gpsd-2.37/configure.ac	2008-07-22 09:56:17.000000000 +0200
-@@ -88,7 +88,7 @@
- #include netinet/ip.h
- #endif
- ]])
--AC_CHECK_HEADERS(termios.h strings.h ncurses.h getopt.h netdb.h)
-+AC_CHECK_HEADERS(termios.h strings.h ncurses/ncurses.h getopt.h netdb.h)
- 
- AC_CHECK_FUNCS(round, roundf)
- AC_CHECK_FUNCS(strlcpy)
-@@ -237,7 +237,7 @@
- fi
- dnl End of X11 checks
- 
--AC_CHECK_HEADER(ncurses.h, ac_ncurses='yes', ac_ncurses='no')
-+AC_CHECK_HEADER(ncurses/ncurses.h, ac_ncurses='yes', ac_ncurses='no')
- AM_CONDITIONAL([HAVE_NCURSES], [test x"$ac_ncurses" = "xyes"])
- AC_CHECK_LIB(ncurses, initscr, ac_ncurses_lib='yes', ac_ncurses_lib='no')
- if test x"$ac_ncurses_lib" = "xyes" -a x"$ac_ncurses" = "xno" ; then
-diff -durN gpsd-2.37.orig/sirfmon.c gpsd-2.37/sirfmon.c
---- gpsd-2.37.orig/sirfmon.c	2007-06-26 20:54:32.000000000 +0200
-+++ gpsd-2.37/sirfmon.c	2008-07-22 09:57:32.000000000 +0200
-@@ -42,11 +42,8 @@
- #include <stdbool.h>
+ #include "gpsdclient.h"
+Tylko w gpsd-2.39.new/: cgps.c~
+diff -ur gpsd-2.39/configure.ac gpsd-2.39.new/configure.ac
+--- gpsd-2.39/configure.ac	2009-03-18 22:09:27.000000000 +0100
++++ gpsd-2.39.new/configure.ac	2009-06-08 13:40:34.023615525 +0200
+@@ -327,7 +327,7 @@
+ dnl TODO: give an example of what system uses curses.h with
+ dnl libncurses.  We define our own variables to reduce the risk of
+ dnl breaking if autoconf changes (private) variable names.
+-AC_CHECK_HEADERS(ncurses.h)
++AC_CHECK_HEADERS(ncurses/ncurses.h)
+ AC_CHECK_LIB(ncurses, initscr, NCURSES_LIBS="-lncurses")
+ AC_SUBST(NCURSES_LIBS)
+ if test x"$NCURSES_LIBS" = x"" ; then
+Tylko w gpsd-2.39.new/: configure.ac~
+diff -ur gpsd-2.39/gpsmon.c gpsd-2.39.new/gpsmon.c
+--- gpsd-2.39/gpsmon.c	2009-03-18 18:37:56.000000000 +0100
++++ gpsd-2.39.new/gpsmon.c	2009-06-08 13:42:31.817981645 +0200
+@@ -27,11 +27,7 @@
+ #include <sys/ioctl.h>	/* for O_RDWR */
  
  #include "gpsd_config.h"
 -#ifdef HAVE_NCURSES_H
@@ -48,7 +41,109 @@ diff -durN gpsd-2.37.orig/sirfmon.c gpsd-2.37/sirfmon.c
 -#include <curses.h>
 -#endif /* HAVE_NCURSES_H */
 +#include <ncurses/ncurses.h>
-+
- #include "gps.h"	/* for DEFAULT_GPSD_PORT; brings in PI as well */
+ #include "gpsd.h"
  
- #define PUT_ORIGIN	-4
+ #include "bits.h"
+Tylko w gpsd-2.39.new/: gpsmon.c~
+diff -ur gpsd-2.39/monitor_italk.c gpsd-2.39.new/monitor_italk.c
+--- gpsd-2.39/monitor_italk.c	2009-03-06 21:15:24.000000000 +0100
++++ gpsd-2.39.new/monitor_italk.c	2009-06-08 13:42:26.533324558 +0200
+@@ -12,11 +12,7 @@
+ #include <assert.h>
+ 
+ #include "gpsd_config.h"
+-#ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
++#include <ncurses/ncurses.h>
+ #include "gpsd.h"
+ 
+ #include "bits.h"
+Tylko w gpsd-2.39.new/: monitor_italk.c~
+diff -ur gpsd-2.39/monitor_nmea.c gpsd-2.39.new/monitor_nmea.c
+--- gpsd-2.39/monitor_nmea.c	2009-03-06 15:53:41.000000000 +0100
++++ gpsd-2.39.new/monitor_nmea.c	2009-06-08 13:42:46.875150797 +0200
+@@ -18,11 +18,7 @@
+ #include <assert.h>
+ 
+ #include "gpsd_config.h"
+-#ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
++#include <ncurses/ncurses.h>
+ #include "gpsd.h"
+ 
+ #include "bits.h"
+Tylko w gpsd-2.39.new/: monitor_nmea.c~
+diff -ur gpsd-2.39/monitor_proto.c gpsd-2.39.new/monitor_proto.c
+--- gpsd-2.39/monitor_proto.c	2009-03-03 14:17:16.000000000 +0100
++++ gpsd-2.39.new/monitor_proto.c	2009-06-08 13:43:01.449954577 +0200
+@@ -15,11 +15,7 @@
+ #include <assert.h>
+ 
+ #include "gpsd_config.h"
+-#ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
++#include <ncurses/ncurses.h>
+ #include "gpsd.h"
+ 
+ #include "bits.h"
+Tylko w gpsd-2.39.new/: monitor_proto.c~
+diff -ur gpsd-2.39/monitor_sirf.c gpsd-2.39.new/monitor_sirf.c
+--- gpsd-2.39/monitor_sirf.c	2009-03-06 15:53:41.000000000 +0100
++++ gpsd-2.39.new/monitor_sirf.c	2009-06-08 13:43:14.793316927 +0200
+@@ -16,11 +16,7 @@
+ #include <assert.h>
+ 
+ #include "gpsd_config.h"
+-#ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
++#include <ncurses/ncurses.h>
+ #include "gpsd.h"
+ 
+ #include "bits.h"
+Tylko w gpsd-2.39.new/: monitor_sirf.c~
+diff -ur gpsd-2.39/monitor_superstar2.c gpsd-2.39.new/monitor_superstar2.c
+--- gpsd-2.39/monitor_superstar2.c	2009-03-06 21:15:24.000000000 +0100
++++ gpsd-2.39.new/monitor_superstar2.c	2009-06-08 13:43:29.506723380 +0200
+@@ -12,11 +12,7 @@
+ #include <assert.h>
+ 
+ #include "gpsd_config.h"
+-#ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
++#include <ncurses/ncurses.h>
+ #include "gpsd.h"
+ 
+ #include "bits.h"
+Tylko w gpsd-2.39.new/: monitor_superstar2.c~
+diff -ur gpsd-2.39/monitor_ubx.c gpsd-2.39.new/monitor_ubx.c
+--- gpsd-2.39/monitor_ubx.c	2009-03-12 13:52:21.000000000 +0100
++++ gpsd-2.39.new/monitor_ubx.c	2009-06-08 13:43:41.975022652 +0200
+@@ -12,11 +12,7 @@
+ #include <assert.h>
+ 
+ #include "gpsd_config.h"
+-#ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
+-#else
+-#include <curses.h>
+-#endif /* HAVE_NCURSES_H */
++#include <ncurses/ncurses.h>
+ #include "gpsd.h"
+ 
+ #include "bits.h"
+Tylko w gpsd-2.39.new/: monitor_ubx.c~
