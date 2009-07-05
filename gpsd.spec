@@ -10,7 +10,7 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.39
-Release:	1
+Release:	2
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
@@ -181,14 +181,14 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 	%{?with_dbus:--enable-dbus} \
 	%{!?with_x:--without-x}
 
-%{__make}
+%{__make} -j1
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{py_sitedir},%{_datadir}/%{name}}
 install -d $RPM_BUILD_ROOT{%{udevdir},/etc/{udev/rules.d,sysconfig}}
 
-%{__make} install \
+%{__make} -j1 install \
 	DESTDIR=$RPM_BUILD_ROOT
 
 install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
