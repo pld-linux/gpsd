@@ -10,7 +10,7 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.39
-Release:	2
+Release:	3
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
@@ -218,8 +218,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpsmon
 %{_mandir}/man8/gpsd.8*
 %{_mandir}/man1/gpsmon.1*
-%{udevdir}/gpsd.hotplug
-%{udevdir}/gpsd.hotplug.wrapper
+%attr(755,root,root) %{udevdir}/gpsd.hotplug
+%attr(755,root,root) %{udevdir}/gpsd.hotplug.wrapper
 /etc/udev/rules.d/25-gpsd.rules
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
 %dir %{_datadir}/%{name}
