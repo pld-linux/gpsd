@@ -9,17 +9,13 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	2.39
-Release:	3
+Version:	2.92
+Release:	0.1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	3db437196a6840c252fca99b6c19d4d0
-Patch0:		%{name}-ncurses.patch
-Patch1:		%{name}-udev.patch
+# Source0-md5:	50b60d9f6dd51e001f4dfbaeb825c988
 URL:		http://gpsd.berlios.de/
-BuildRequires:	autoconf
-BuildRequires:	automake
 %if %{with dbus}
 BuildRequires:	dbus-devel
 BuildRequires:	dbus-glib-devel
@@ -168,16 +164,9 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
 
 %build
-%{__libtoolize}
-%{__aclocal}
-%{__autoconf}
-%{__autoheader}
-%{__automake}
-%configure \
+%configure CPPFLAGS="-I%{_includedir}/ncurses" \
 	%{?with_dbus:--enable-dbus} \
 	%{!?with_x:--without-x}
 
@@ -192,8 +181,8 @@ install -d $RPM_BUILD_ROOT{%{udevdir},/etc/{udev/rules.d,sysconfig}}
 	DESTDIR=$RPM_BUILD_ROOT
 
 install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
-install	gpsd.udev $RPM_BUILD_ROOT/etc/udev/rules.d/25-gpsd.rules
-install	gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
+#install	gpsd.udev $RPM_BUILD_ROOT/etc/udev/rules.d/25-gpsd.rules
+#install	gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
 
 %if %{with x}
@@ -201,8 +190,8 @@ install -D xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
 install -D xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
 %endif
 
-mv $RPM_BUILD_ROOT%{py_sitescriptdir}/*.so $RPM_BUILD_ROOT%{py_sitedir}
-
+%py_comp $RPM_BUILD_ROOT%{py_sitedir}
+%py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
 
 %clean
@@ -220,19 +209,18 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/gpsmon.1*
 %attr(755,root,root) %{udevdir}/gpsd.hotplug
 %attr(755,root,root) %{udevdir}/gpsd.hotplug.wrapper
-/etc/udev/rules.d/25-gpsd.rules
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
+#/etc/udev/rules.d/25-gpsd.rules
+#%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
 %dir %{_datadir}/%{name}
 %{_datadir}/gpsd/dgpsip-servers
 
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgps.so.18
+%attr(755,root,root) %ghost %{_libdir}/libgps.so.19
 
 %files devel
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/gpsflash
 %attr(755,root,root) %{_bindir}/gpsdecode
 %attr(755,root,root) %{_libdir}/libgps.so
 %{_libdir}/libgps.la
@@ -241,7 +229,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/libgpsmm.h
 %{_pkgconfigdir}/libgps.pc
 %{_pkgconfigdir}/libgpsd.pc
-%{_mandir}/man1/gpsflash.1*
 %{_mandir}/man1/gpsdecode.1*
 %{_mandir}/man3/libgps.3*
 %{_mandir}/man3/libgpsd.3*
@@ -258,11 +245,13 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpscat
 %attr(755,root,root) %{_bindir}/gpsfake
 %attr(755,root,root) %{_bindir}/gpsprof
-%{py_sitescriptdir}/gps.py[co]
 %{py_sitescriptdir}/gpscap.py[co]
-%{py_sitescriptdir}/gpsfake.py[co]
-%attr(755,root,root) %{py_sitedir}/gpslib.so
-%attr(755,root,root) %{py_sitedir}/gpspacket.so
+
+%dir %{py_sitedir}/gps
+%attr(755,root,root) %{py_sitedir}/gps/*.so
+%{py_sitedir}/gps/*.py[co]
+%{py_sitedir}/*.egg*
+
 %{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsfake.1*
 %{_mandir}/man1/gpsprof.1*
@@ -275,7 +264,7 @@ rm -rf $RPM_BUILD_ROOT
 %{?with_dbus:%attr(755,root,root) %{_bindir}/gpxlogger}
 %{_mandir}/man1/gpsctl.1*
 %{_mandir}/man1/cgps.1*
-%{_mandir}/man1/cgpxlogger.1*
+#%{_mandir}/man1/cgpxlogger.1*
 %{_mandir}/man1/gps.1*
 %{_mandir}/man1/gpspipe.1*
 
