@@ -20,13 +20,16 @@ URL:		http://gpsd.berlios.de/
 BuildRequires:	dbus-devel
 BuildRequires:	dbus-glib-devel
 %endif
+BuildRequires:	docbook-dtd412-xml
+BuildRequires:	libstdc++-devel
+BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
-%if %{with x}
-BuildRequires:	openmotif-devel
-BuildRequires:	xorg-lib-libXaw-devel
-%endif
+%{?with_x:BuildRequires:	openmotif-devel}
+BuildRequires:	pkgconfig
 BuildRequires:	python-devel
 BuildRequires:	rpm-pythonprov
+BuildRequires:	xmlto
+%{?with_x:BuildRequires:	xorg-lib-libXaw-devel}
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	udev-core >= 1:127
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
