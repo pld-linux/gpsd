@@ -9,18 +9,19 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	2.92
+Version:	2.94
 Release:	0.1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	50b60d9f6dd51e001f4dfbaeb825c988
+# Source0-md5:	ce70bcd707ac1df861d4c72f503c09d1
 URL:		http://gpsd.berlios.de/
 %if %{with dbus}
 BuildRequires:	dbus-devel
 BuildRequires:	dbus-glib-devel
 %endif
 BuildRequires:	docbook-dtd412-xml
+BuildRequires:	docbook-style-xsl
 BuildRequires:	libstdc++-devel
 BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
@@ -219,6 +220,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libgps.so
+%attr(755,root,root) %{_libdir}/libgpsd.so.*
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgps.so.19
 
@@ -227,6 +230,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpsdecode
 %attr(755,root,root) %{_libdir}/libgps.so
 %{_libdir}/libgps.la
+%{_libdir}/libgpsd.la
 %{_includedir}/gps.h
 %{_includedir}/gpsd.h
 %{_includedir}/libgpsmm.h
@@ -242,6 +246,7 @@ rm -rf $RPM_BUILD_ROOT
 %files static
 %defattr(644,root,root,755)
 %{_libdir}/libgps.a
+%{_libdir}/libgpsd.a
 
 %files -n python-gps
 %defattr(644,root,root,755)
