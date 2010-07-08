@@ -10,11 +10,12 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.94
-Release:	0.1
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
 # Source0-md5:	ce70bcd707ac1df861d4c72f503c09d1
+Patch0:		%{name}-link.patch
 URL:		http://gpsd.berlios.de/
 %if %{with dbus}
 BuildRequires:	dbus-devel
@@ -23,6 +24,7 @@ BuildRequires:	dbus-glib-devel
 BuildRequires:	docbook-dtd412-xml
 BuildRequires:	docbook-style-xsl
 BuildRequires:	libstdc++-devel
+BuildRequires:	libusb-devel
 BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
 %{?with_x:BuildRequires:	openmotif-devel}
@@ -168,9 +170,14 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 
 %prep
 %setup -q
+%patch0 -p1
+sed -i -e 's#/usr/lib/libusb-\*\.so#/usr/%{_lib}/libusb-*.so#g' configure*
 
 %build
-%configure CPPFLAGS="-I%{_includedir}/ncurses" \
+%{__libtoolize}
+%{__aclocal}
+%{__autoconf}
+%configure CPPFLAGS="-I%{_includedir}/ncurses $(pkg-config --cflags-only-I libusb-1.0)" \
 	%{?with_dbus:--enable-dbus} \
 	%{!?with_x:--without-x}
 
@@ -190,7 +197,6 @@ install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
 
 %if %{with x}
-install -D xgps.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgps
 install -D xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
 %endif
 
@@ -229,6 +235,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/gpsdecode
 %attr(755,root,root) %{_libdir}/libgps.so
+%attr(755,root,root) %{_libdir}/libgpsd.so
 %{_libdir}/libgps.la
 %{_libdir}/libgpsd.la
 %{_includedir}/gps.h
@@ -282,8 +289,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/lcdgps
 %attr(755,root,root) %{_bindir}/xgps
 %attr(755,root,root) %{_bindir}/xgpsspeed
-%{_appdefsdir}/xgps
 %{_appdefsdir}/xgpsspeed
+%{_mandir}/man1/lcdgps.1*
 %{_mandir}/man1/xgps.1*
 %{_mandir}/man1/xgpsspeed.1*
 %endif

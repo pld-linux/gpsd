@@ -1,0 +1,11 @@
+--- gpsd-2.94/configure.ac~	2010-07-08 20:16:16.848861269 +0200
++++ gpsd-2.94/configure.ac	2010-07-08 20:17:38.965519312 +0200
+@@ -352,7 +352,7 @@
+ dnl libncurses.  We define our own variables to reduce the risk of
+ dnl breaking if autoconf changes (private) variable names.
+ AC_CHECK_HEADERS(ncurses.h)
+-AC_CHECK_LIB(ncurses, initscr, NCURSES_LIBS="-lncurses")
++AC_CHECK_LIB(ncurses, initscr, NCURSES_LIBS="-lncurses -ltinfo")
+ AC_SUBST(NCURSES_LIBS)
+ if test x"$NCURSES_LIBS" = x"" ; then
+   AC_MSG_WARN([Not including curses support])
