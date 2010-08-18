@@ -1,6 +1,6 @@
-#
 # TODO:
 #	- fix pysitedir???
+#   - ?? what the above todo means??
 #
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
@@ -10,7 +10,7 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.94
-Release:	1
+Release:	2
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
@@ -226,8 +226,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libgps.so
-%attr(755,root,root) %{_libdir}/libgpsd.so.*
+%attr(755,root,root) %{_libdir}/libgpsd.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpsd.so.0
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgps.so.19
 
