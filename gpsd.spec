@@ -9,12 +9,12 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	2.94
-Release:	2
+Version:	2.95
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	ce70bcd707ac1df861d4c72f503c09d1
+# Source0-md5:	12535a9ed9fecf9ea2c5bdc9840da5ae
 Patch0:		%{name}-link.patch
 URL:		http://gpsd.berlios.de/
 %if %{with dbus}
@@ -37,7 +37,6 @@ Requires:	%{name}-libs = %{version}-%{release}
 Requires:	udev-core >= 1:127
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_appdefsdir	/usr/share/X11/app-defaults
 %define		udevdir		/lib/udev
 
 %description
@@ -177,7 +176,7 @@ sed -i -e 's#/usr/lib/libusb-\*\.so#/usr/%{_lib}/libusb-*.so#g' configure*
 %{__libtoolize}
 %{__aclocal}
 %{__autoconf}
-%configure CPPFLAGS="-I%{_includedir}/ncurses $(pkg-config --cflags-only-I libusb-1.0)" \
+%configure CPPFLAGS="-I/usr/include/ncurses $(pkg-config --cflags-only-I libusb-1.0)" \
 	%{?with_dbus:--enable-dbus} \
 	%{!?with_x:--without-x}
 
@@ -195,10 +194,6 @@ install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
 #install	gpsd.udev $RPM_BUILD_ROOT/etc/udev/rules.d/25-gpsd.rules
 #install	gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
-
-%if %{with x}
-install -D xgpsspeed.ad $RPM_BUILD_ROOT%{_appdefsdir}/xgpsspeed
-%endif
 
 %py_comp $RPM_BUILD_ROOT%{py_sitedir}
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
@@ -230,6 +225,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libgpsd.so.0
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgps.so.19
+%attr(755,root,root) %{_libdir}/libQgpsmm.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.19
 
 %files devel
 %defattr(644,root,root,755)
@@ -289,7 +286,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/lcdgps
 %attr(755,root,root) %{_bindir}/xgps
 %attr(755,root,root) %{_bindir}/xgpsspeed
-%{_appdefsdir}/xgpsspeed
 %{_mandir}/man1/lcdgps.1*
 %{_mandir}/man1/xgps.1*
 %{_mandir}/man1/xgpsspeed.1*
