@@ -5,12 +5,14 @@
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
 %bcond_without	x	# build without X Window System support
-#
+
+%define		skip_post_check_so	libgpsd.so.0.0.0
+
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	2.95
-Release:	1
+Release:	2
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
