@@ -4,10 +4,9 @@
 #
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
+%bcond_without	bluez	# build without Bluetooth support
 %bcond_without	x	# build without X Window System support
-
-%define		skip_post_check_so	libgpsd.so.0.0.0
-
+#
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
@@ -18,28 +17,35 @@ Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
 # Source0-md5:	12535a9ed9fecf9ea2c5bdc9840da5ae
 Patch0:		%{name}-link.patch
+Patch1:		%{name}-python.patch
 URL:		http://gpsd.berlios.de/
+BuildRequires:	QtNetwork-devel >= 4.4
+BuildRequires:	autoconf >= 2.50
+BuildRequires:	automake
 %if %{with dbus}
 BuildRequires:	dbus-devel
 BuildRequires:	dbus-glib-devel
 %endif
+%{?with_bluez:BuildRequires:	bluez-libs-devel}
 BuildRequires:	docbook-dtd412-xml
 BuildRequires:	docbook-style-xsl
 BuildRequires:	libstdc++-devel
-BuildRequires:	libusb-devel
+BuildRequires:	libtool >= 2:1.5
+BuildRequires:	libusb-devel >= 1.0.0
 BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
-%{?with_x:BuildRequires:	openmotif-devel}
 BuildRequires:	pkgconfig
-BuildRequires:	python-devel
+BuildRequires:	python-devel >= 1:2.4
+BuildRequires:	qt4-qmake >= 4.4
 BuildRequires:	rpm-pythonprov
 BuildRequires:	xmlto
-%{?with_x:BuildRequires:	xorg-lib-libXaw-devel}
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	udev-core >= 1:127
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		udevdir		/lib/udev
+
+%define		skip_post_check_so	libgpsd.so.0.0.0
 
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
@@ -92,6 +98,7 @@ Summary:	Client libraries in C and Python for talking to a running gpsd or GPS
 Summary(pl.UTF-8):	Biblioteki klienckie dla C i Pythona do komunikacji z gpsd lub GPS-em
 Group:		Development/Libraries
 Requires:	%{name}-libs = %{version}-%{release}
+Requires:	libstdc++-devel
 
 %description devel
 This package provides C header files for the gpsd shared libraries
@@ -114,6 +121,33 @@ Static GPS client library.
 
 %description static -l pl.UTF-8
 Statyczna biblioteka kliencka GPS.
+
+%package qt-libs
+Summary:	GPS Qt4 integration library
+Summary(pl.UTF-8):	Biblioteka integrująca GPS z Qt4
+Group:		X11/Libraries
+Requires:	%{name}-libs = %{version}-%{release}
+Requires:	QtNetwork >= 4.4
+
+%description qt-libs
+GPS Qt4 integration library.
+
+%description qt-libs -l pl.UTF-8
+Biblioteka integrująca GPS z Qt4.
+
+%package qt-devel
+Summary:	Development files for GPS Qt4 integration library
+Summary(pl.UTF-8):	Pliki programistyczne biblioteki integrującej GPS z Qt4
+Group:		X11/Development/Libraries
+Requires:	%{name}-devel = %{version}-%{release}
+Requires:	%{name}-qt-libs = %{version}-%{release}
+Requires:	QtNetwork-devel >= 4.4
+
+%description qt-devel
+Development files for GPS Qt4 integration library.
+
+%description qt-devel -l pl.UTF-8
+Pliki programistyczne biblioteki integrującej GPS z Qt4.
 
 %package -n python-gps
 Summary:	Python GPSd client library
@@ -152,7 +186,8 @@ Summary:	Clients for gpsd with an X interface
 Summary(pl.UTF-8):	Aplikacje klienckie z interfejsem X
 Group:		Applications/System
 Requires:	%{name}-libs = %{version}-%{release}
-Requires:	xorg-lib-libXt >= 1.0.0
+Requires:	python-gps = %{version}-%{release}
+Requires:	python-pygtk-gtk >= 2:2.0
 
 %description clients-gui
 xgps is a simple test client for gpsd with an X interface. It displays
@@ -172,13 +207,17 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %prep
 %setup -q
 %patch0 -p1
-sed -i -e 's#/usr/lib/libusb-\*\.so#/usr/%{_lib}/libusb-*.so#g' configure*
+%patch1 -p1
 
 %build
 %{__libtoolize}
 %{__aclocal}
 %{__autoconf}
-%configure CPPFLAGS="-I/usr/include/ncurses $(pkg-config --cflags-only-I libusb-1.0)" \
+%{__autoheader}
+%{__automake}
+%configure \
+	CPPFLAGS="-I/usr/include/ncurses" \
+	%{?with_bluez:--enable-bluetooth} \
 	%{?with_dbus:--enable-dbus} \
 	%{!?with_x:--without-x}
 
@@ -197,6 +236,10 @@ install gpsd.hotplug gpsd.hotplug.wrapper $RPM_BUILD_ROOT%{udevdir}
 #install	gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
 install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
 
+# check if missing header installation is up to date
+[ ! -f $RPM_BUILD_ROOT%{_includedir}/libQgpsmm_global.h ] || exit 1
+install libQgpsmm/libQgpsmm_global.h $RPM_BUILD_ROOT%{_includedir}
+
 %py_comp $RPM_BUILD_ROOT%{py_sitedir}
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
@@ -206,6 +249,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %post	libs -p /sbin/ldconfig
 %postun	libs -p /sbin/ldconfig
+
+%post	qt-libs -p /sbin/ldconfig
+%postun	qt-libs -p /sbin/ldconfig
 
 %files
 %defattr(644,root,root,755)
@@ -218,7 +264,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{udevdir}/gpsd.hotplug.wrapper
 #/etc/udev/rules.d/25-gpsd.rules
 #%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
-%dir %{_datadir}/%{name}
+%dir %{_datadir}/gpsd
 %{_datadir}/gpsd/dgpsip-servers
 
 %files libs
@@ -227,8 +273,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libgpsd.so.0
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgps.so.19
-%attr(755,root,root) %{_libdir}/libQgpsmm.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.19
 
 %files devel
 %defattr(644,root,root,755)
@@ -254,6 +298,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libgps.a
 %{_libdir}/libgpsd.a
 
+%files qt-libs
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libQgpsmm.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.19
+
+%files qt-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libQgpsmm.so
+%{_includedir}/libQgpsmm_global.h
+
 %files -n python-gps
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/gpscat
@@ -264,7 +318,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py_sitedir}/gps
 %attr(755,root,root) %{py_sitedir}/gps/*.so
 %{py_sitedir}/gps/*.py[co]
-%{py_sitedir}/*.egg*
+%{py_sitedir}/gps-%{version}-py*.egg-info
 
 %{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsfake.1*
@@ -278,7 +332,6 @@ rm -rf $RPM_BUILD_ROOT
 %{?with_dbus:%attr(755,root,root) %{_bindir}/gpxlogger}
 %{_mandir}/man1/gpsctl.1*
 %{_mandir}/man1/cgps.1*
-#%{_mandir}/man1/cgpxlogger.1*
 %{_mandir}/man1/gps.1*
 %{_mandir}/man1/gpspipe.1*
 
