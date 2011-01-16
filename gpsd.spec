@@ -1,6 +1,3 @@
-# TODO:
-#	- fix pysitedir???
-#   - ?? what the above todo means??
 #
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
@@ -40,12 +37,9 @@ BuildRequires:	qt4-qmake >= 4.4
 BuildRequires:	rpm-pythonprov
 BuildRequires:	xmlto
 Requires:	%{name}-libs = %{version}-%{release}
-Requires:	udev-core >= 1:127
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		udevdir		/lib/udev
-
-%define		skip_post_check_so	libgpsd.so.0.0.0
 
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
@@ -81,6 +75,19 @@ uruchomić gpsd ręcznie. Po poączeniu demon automatycznie wykrywa
 właściwą prędkość, liczbę bitów stopu i protokół. Demon oczekuje
 spokojnie kiedy nie ma klientów i radzi sobie dobrze z odłączaniem i
 ponownym podłączaniem GPS-a.
+
+%package -n udev-gpsd
+Summary:	UDEV support for GPS hotplugging
+Summary(pl.UTF-8):	Obsługa UDEV-a do podłączania urządzeń GPS
+Group:		Applications/System
+Requires:	%{name} = %{version}-%{release}
+Requires:	udev-core >= 1:127
+
+%description -n udev-gpsd
+UDEV support for GPS hotplugging.
+
+%description -n udev-gpsd -l pl.UTF-8
+Obsługa UDEV-a do podłączania urządzeń GPS.
 
 %package libs
 Summary:	GPSd client library
@@ -240,6 +247,11 @@ install dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
 [ ! -f $RPM_BUILD_ROOT%{_includedir}/libQgpsmm_global.h ] || exit 1
 install libQgpsmm/libQgpsmm_global.h $RPM_BUILD_ROOT%{_includedir}
 
+[ ! -d $RPM_BUILD_ROOT%{_desktopdir} ] || exit 1
+install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
+install packaging/X11/{xgps,xgpsspeed}.desktop $RPM_BUILD_ROOT%{_desktopdir}
+install packaging/X11/gpsd-logo.png $RPM_BUILD_ROOT%{_pixmapsdir}
+
 %py_comp $RPM_BUILD_ROOT%{py_sitedir}
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
@@ -260,12 +272,15 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpsmon
 %{_mandir}/man8/gpsd.8*
 %{_mandir}/man1/gpsmon.1*
+%dir %{_datadir}/gpsd
+%{_datadir}/gpsd/dgpsip-servers
+
+%files -n udev-gpsd
+%defattr(644,root,root,755)
 %attr(755,root,root) %{udevdir}/gpsd.hotplug
 %attr(755,root,root) %{udevdir}/gpsd.hotplug.wrapper
 #/etc/udev/rules.d/25-gpsd.rules
 #%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
-%dir %{_datadir}/gpsd
-%{_datadir}/gpsd/dgpsip-servers
 
 %files libs
 %defattr(644,root,root,755)
@@ -313,13 +328,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpscat
 %attr(755,root,root) %{_bindir}/gpsfake
 %attr(755,root,root) %{_bindir}/gpsprof
-%{py_sitescriptdir}/gpscap.py[co]
-
 %dir %{py_sitedir}/gps
 %attr(755,root,root) %{py_sitedir}/gps/*.so
 %{py_sitedir}/gps/*.py[co]
 %{py_sitedir}/gps-%{version}-py*.egg-info
-
+%{py_sitescriptdir}/gpscap.py[co]
 %{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsfake.1*
 %{_mandir}/man1/gpsprof.1*
@@ -344,4 +357,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/lcdgps.1*
 %{_mandir}/man1/xgps.1*
 %{_mandir}/man1/xgpsspeed.1*
+%{_desktopdir}/xgps.desktop
+%{_desktopdir}/xgpsspeed.desktop
+%{_pixmapsdir}/gpsd-logo.png
 %endif

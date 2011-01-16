@@ -26,3 +26,14 @@
  AC_SUBST(NCURSES_LIBS)
  if test x"$NCURSES_LIBS" = x"" ; then
    AC_MSG_WARN([Not including curses support])
+--- gpsd-2.95/Makefile.am.orig	2011-01-15 19:48:42.598366646 +0100
++++ gpsd-2.95/Makefile.am	2011-01-16 07:57:57.110356589 +0100
+@@ -260,7 +260,7 @@
+ 
+ nodist_libgpsd_la_SOURCES = packet_names.h ais_json.i
+ libgps_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD)
+-libgpsd_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD) $(BLUEZ_LIBS) libgps.la
++libgpsd_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD) $(BLUEZ_LIBS) $(LIBUSB_LIBS) libgps.la
+ 
+ noinst_SCRIPTS =
+ 
