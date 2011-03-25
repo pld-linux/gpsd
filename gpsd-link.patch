@@ -1,8 +1,8 @@
---- gpsd-2.95/configure.ac~	2010-07-08 20:16:16.848861269 +0200
-+++ gpsd-2.95/configure.ac	2010-07-08 20:17:38.965519312 +0200
-@@ -227,13 +227,13 @@
- 	   [Define if you have the external 'daylight' variable.])
- fi
+--- gpsd-2.96/configure.ac.orig	2011-03-22 00:20:02.000000000 +0100
++++ gpsd-2.96/configure.ac	2011-03-24 21:03:08.032911291 +0100
+@@ -151,13 +151,13 @@
+ AC_HEADER_TIME
+ AC_STRUCT_TIMEZONE
  
 -AC_CHECK_LIB(nsl, gethostbyname, LIBNSL="-lnsl")
 +AC_CHECK_FUNC([gethostbyname], , [AC_CHECK_LIB(nsl, gethostbyname, LIBNSL="-lnsl")])
@@ -17,23 +17,23 @@
  AC_SUBST(LIBC)
  AC_CHECK_LIB(pthread, pthread_setcancelstate,
  	[LIBPTHREAD="-lpthread"
-@@ -352,7 +352,7 @@
- dnl libncurses.  We define our own variables to reduce the risk of
- dnl breaking if autoconf changes (private) variable names.
- AC_CHECK_HEADERS(ncurses.h)
+@@ -198,7 +198,7 @@
+ 
+ dnl Check for curses headers and libraries.  The presence of the
+ dnl library is used to decide whether or not to build some programs.
 -AC_CHECK_LIB(ncurses, initscr, NCURSES_LIBS="-lncurses")
 +AC_CHECK_LIB(ncurses, initscr, NCURSES_LIBS="-lncurses -ltinfo")
  AC_SUBST(NCURSES_LIBS)
  if test x"$NCURSES_LIBS" = x"" ; then
    AC_MSG_WARN([Not including curses support])
---- gpsd-2.95/Makefile.am.orig	2011-01-15 19:48:42.598366646 +0100
-+++ gpsd-2.95/Makefile.am	2011-01-16 07:57:57.110356589 +0100
-@@ -260,7 +260,7 @@
+--- gpsd-2.96/Makefile.am.orig	2011-03-15 04:34:31.000000000 +0100
++++ gpsd-2.96/Makefile.am	2011-03-24 21:02:52.688910453 +0100
+@@ -272,7 +272,7 @@
  
  nodist_libgpsd_la_SOURCES = packet_names.h ais_json.i
  libgps_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD)
--libgpsd_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD) $(BLUEZ_LIBS) libgps.la
-+libgpsd_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD) $(BLUEZ_LIBS) $(LIBUSB_LIBS) libgps.la
+-libgpsd_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD) $(BLUEZ_LIBS) $(LIBRT) libgps.la
++libgpsd_la_LIBADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(LIBPTHREAD) $(BLUEZ_LIBS) $(LIBUSB_LIBS) $(LIBRT) libgps.la
  
  noinst_SCRIPTS =
  

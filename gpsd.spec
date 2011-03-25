@@ -7,14 +7,13 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	2.95
-Release:	3
+Version:	2.96
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.berlios.de/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	12535a9ed9fecf9ea2c5bdc9840da5ae
+# Source0-md5:	26a7a04d4298bc3a3a5d89fef4582b64
 Patch0:		%{name}-link.patch
-Patch1:		%{name}-python.patch
 URL:		http://gpsd.berlios.de/
 BuildRequires:	QtNetwork-devel >= 4.4
 BuildRequires:	autoconf >= 2.50
@@ -214,7 +213,6 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
 
 %build
 %{__libtoolize}
@@ -287,7 +285,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libgpsd.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgpsd.so.0
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgps.so.19
+%attr(755,root,root) %ghost %{_libdir}/libgps.so.20
 
 %files devel
 %defattr(644,root,root,755)
@@ -305,7 +303,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man3/libgps.3*
 %{_mandir}/man3/libgpsd.3*
 %{_mandir}/man3/libgpsmm.3*
-%{_mandir}/man5/rtcm-104.5*
 %{_mandir}/man5/srec.5*
 
 %files static
@@ -316,12 +313,14 @@ rm -rf $RPM_BUILD_ROOT
 %files qt-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libQgpsmm.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.19
+%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.20
 
 %files qt-devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libQgpsmm.so
+%{_libdir}/libQgpsmm.prl
 %{_includedir}/libQgpsmm_global.h
+%{_pkgconfigdir}/Qgpsmm.pc
 
 %files -n python-gps
 %defattr(644,root,root,755)
@@ -332,7 +331,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{py_sitedir}/gps/*.so
 %{py_sitedir}/gps/*.py[co]
 %{py_sitedir}/gps-%{version}-py*.egg-info
-%{py_sitescriptdir}/gpscap.py[co]
+%{py_sitedir}/gpscap.py[co]
 %{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsfake.1*
 %{_mandir}/man1/gpsprof.1*
