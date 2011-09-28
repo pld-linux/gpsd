@@ -1,24 +1,26 @@
 --- gpsd-3.1/SConstruct.orig	2011-08-28 13:14:24.000000000 +0200
 +++ gpsd-3.1/SConstruct	2011-09-26 18:53:55.711394116 +0200
-@@ -686,7 +686,7 @@
+@@ -686,7 +686,8 @@
  compiled_gpsdlib = Library(env=env,
                             target="gpsd",
                             sources=libgpsd_sources,
 -                           version=libversion, parse_flags=usblibs + rtlibs + bluezlibs)
 +                           version=libversion, parse_flags=usblibs + rtlibs + bluezlibs + ["-L.", "-lgps", "-lm"])
++env.Depends(compiled_gpsdlib, compiled_gpslib)
  
  libraries = [compiled_gpslib, compiled_gpsdlib]
  
-@@ -709,7 +709,7 @@
+@@ -709,7 +710,8 @@
              compile_flags = qt_env['CFLAGS']
          qtobjects.append(qt_env.SharedObject(src.split(".")[0] + '-qt', src,
                                         CC=compile_with, CFLAGS=compile_flags))
 -    compiled_qgpsmmlib = Library(qt_env, "Qgpsmm", qtobjects, libversion)
 +    compiled_qgpsmmlib = Library(qt_env, "Qgpsmm", qtobjects, libversion, parse_flags=["-L.", "-lgps"])
++    env.Depends(compiled_qgpsmmlib, compiled_gpslib)
      libraries.append(compiled_qgpsmmlib)
  
  # The libraries have dependencies on system libraries
-@@ -751,7 +751,7 @@
+@@ -751,7 +753,7 @@
  gpsd_env.MergeFlags("-pthread")
  
  gpsd = gpsd_env.Program('gpsd', gpsd_sources,
@@ -27,7 +29,7 @@
  env.Depends(gpsd, [compiled_gpsdlib, compiled_gpslib])
  
  gpsdecode = env.Program('gpsdecode', ['gpsdecode.c'], parse_flags=gpsdlibs)
-@@ -764,7 +764,7 @@
+@@ -764,19 +766,19 @@
  env.Depends(gpsdctl, compiled_gpslib)
  
  gpsmon = env.Program('gpsmon', gpsmon_sources,
@@ -36,7 +38,12 @@
  env.Depends(gpsmon, [compiled_gpsdlib, compiled_gpslib])
  
  gpspipe = env.Program('gpspipe', ['gpspipe.c'], parse_flags=gpslibs)
-@@ -776,7 +776,7 @@
+ env.Depends(gpspipe, compiled_gpslib)
+ 
+ gpxlogger = env.Program('gpxlogger', ['gpxlogger.c'], parse_flags=gpslibs+dbus_recv_libs)
+-env.Depends(gpspipe, compiled_gpslib)
++env.Depends(gpxlogger, compiled_gpslib)
+ 
  lcdgps = env.Program('lcdgps', ['lcdgps.c'], parse_flags=gpslibs)
  env.Depends(lcdgps, compiled_gpslib)
  
