@@ -1,22 +1,21 @@
 #
-# TODO
-# - libgpsd.so needs -lm
-
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
 %bcond_without	bluez	# build without Bluetooth support
-
+#
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	3.7
-Release:	1.1
+Version:	3.8
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download-mirror.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	52d9785eaf1a51298bb8900dbde88f98
+# Source0-md5:	1a3177b907f25c0ce6d1a0aa22597270
 Patch0:		%{name}-link.patch
 Patch1:		%{name}-qt.patch
+Patch2:		%{name}-flags.patch
+Patch3:		%{name}-destdir.patch
 URL:		http://www.catb.org/gpsd/
 BuildRequires:	QtNetwork-devel >= 4.4
 %if %{with dbus}
@@ -42,8 +41,7 @@ Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 # libgpsd expects gpsd_report() defined by user
-# libQgpsmm expects libgps_dump_state(gps_data_t*)
-%define		skip_post_check_so	libgpsd\.so.* libQgpsmm\.so.*
+%define		skip_post_check_so	libgpsd\.so.*
 
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
@@ -206,20 +204,23 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 
 %prep
 %setup -q
-#%patch0 -p1 CHECK ME
+%patch0 -p1
 %patch1 -p1
-
-# make .egg-info in builddir
-%{__sed} -i -e 's/^\(build = .*\)\])$/\1, python_egg_info])/' SConstruct
+%patch2 -p1
+%patch3 -p1
 
 %build
-export CC="%{__cc}"
-export CXX="%{__cxx}"
-export CFLAGS="%{rpmcflags}"
-export CXXFLAGS="%{rpmcxxflags}"
-export CPPFLAGS="%{rpmcppflags}" #  -I/usr/include/ncurses $(pkg-config --cflags dbus-1)"
-export LDFLAGS="%{rpmldflags}"
-%scons \
+# note: to avoid recompiling/relinking on scons install, whole environment
+# needs to be the same in both build and install sections
+%define scons_env \
+CC="%{__cc}" \
+CXX="%{__cxx}" \
+CFLAGS="%{rpmcflags}" \
+CXXFLAGS="%{rpmcxxflags}" \
+CPPFLAGS="%{rpmcppflags}" \
+LDFLAGS="%{rpmldflags}"
+
+%define	scons_opts \
 	libdir=%{_libdir} \
 	pkgconfigdir=%{_pkgconfigdir} \
 	chrpath=False \
@@ -231,35 +232,34 @@ export LDFLAGS="%{rpmldflags}"
 	%{!?with_bluez:bluez=False} \
 	%{?with_dbus:dbus_export=True}
 
+%scons_env \
+%scons \
+	%scons_opts
+
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_datadir}/%{name},/lib/udev/rules.d,/etc/sysconfig}
 
-# must install manually
-# or great scons would recompile everything
-# FIXME: to avoid scons rebuilding identical *FLAGS must be present in env that were in build section
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_sbindir},%{_includedir},%{_libdir},%{_pkgconfigdir},%{_mandir}/man{1,3,5,8},%{py_sitedir}/gps}
-install -p cgps gegps gpscat gpsctl gpsdecode gpsfake gpsmon gpspipe gpsprof gpxlogger lcdgps xgps xgpsspeed $RPM_BUILD_ROOT%{_bindir}
-install -p gpsd gpsdctl $RPM_BUILD_ROOT%{_sbindir}
-cp -p cgps.1 gegps.1 gps.1 gpscat.1 gpsctl.1 gpsdecode.1 gpsfake.1 gpsmon.1 gpspipe.1 gpsprof.1 lcdgps.1 xgps.1 xgpsspeed.1 $RPM_BUILD_ROOT%{_mandir}/man1
-cp -p gpsd_json.5 srec.5 $RPM_BUILD_ROOT%{_mandir}/man5
-cp -p gpsd.8 gpsdctl.8 $RPM_BUILD_ROOT%{_mandir}/man8
-cp -p gps.h gpsd.h libgpsmm.h $RPM_BUILD_ROOT%{_includedir}
-cp -dp lib{Qgpsmm,gps,gpsd}.so{,.??,.*.*.*} $RPM_BUILD_ROOT%{_libdir}
-for f in libgps.pc libgpsd.pc ; do
-	%{__sed} -e 's,@VERSION@,%{version},;s,@prefix@,%{_prefix},;s,@libdir@,/%{_lib},' ${f}.in >$RPM_BUILD_ROOT%{_pkgconfigdir}/${f}
-done
-cp -p libQgpsmm.3 libgps.3 libgpsd.3 libgpsmm.3 $RPM_BUILD_ROOT%{_mandir}/man3
-cp -p gps-%{version}.egg-info $RPM_BUILD_ROOT%{py_sitedir}
-install gps/*.so $RPM_BUILD_ROOT%{py_sitedir}/gps
-cp -p gps/*.py $RPM_BUILD_ROOT%{py_sitedir}/gps
+%scons_env \
+DESTDIR=$RPM_BUILD_ROOT \
+%scons udev-install \
+	%scons_opts
 
-install -p gpsd.hotplug $RPM_BUILD_ROOT/lib/udev
-install -p gpsd.rules $RPM_BUILD_ROOT/lib/udev/rules.d/25-gpsd.rules
+# fix buggy libdir, kill -L/usr/* from qt Libs
+%{__sed} -i -e 's,^libdir=.*,libdir=%{_libdir},' \
+	-e 's,-L/[^ ]* *,,' \
+	$RPM_BUILD_ROOT%{_pkgconfigdir}/*.pc
+
+# invoke python directly
+%{__sed} -i -e '1s,/usr/bin/env python,/usr/bin/python,' \
+	$RPM_BUILD_ROOT%{_bindir}/{gpscat,gpsfake,gpsprof,xgps,xgpsspeed,gegps}
+
+# omitted from make install
+install gpsinit $RPM_BUILD_ROOT%{_sbindir}
+install -Dp dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
+cp -p gpsd.h $RPM_BUILD_ROOT%{_includedir}
+
 #install packaging/rpm/gpsd.init $RPM_BUILD_ROOT/etc/rc.d/init.d/gpsd
 #install packaging/rpm/gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
-install -p dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
-
 install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
 cp -p packaging/X11/{xgps,xgpsspeed}.desktop $RPM_BUILD_ROOT%{_desktopdir}
 cp -p packaging/X11/gpsd-logo.png $RPM_BUILD_ROOT%{_pixmapsdir}
@@ -267,6 +267,9 @@ cp -p packaging/X11/gpsd-logo.png $RPM_BUILD_ROOT%{_pixmapsdir}
 %py_comp $RPM_BUILD_ROOT%{py_sitedir}
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
+
+# symlinks not needed
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/lib*.so.??.0
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -283,9 +286,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpsmon
 %attr(755,root,root) %{_sbindir}/gpsd
 %attr(755,root,root) %{_sbindir}/gpsdctl
+%attr(755,root,root) %{_sbindir}/gpsinit
 %{_mandir}/man1/gpsmon.1*
 %{_mandir}/man8/gpsd.8*
 %{_mandir}/man8/gpsdctl.8*
+%{_mandir}/man8/gpsinit.8*
 %dir %{_datadir}/gpsd
 %{_datadir}/gpsd/dgpsip-servers
 
@@ -299,7 +304,7 @@ rm -rf $RPM_BUILD_ROOT
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgpsd.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgpsd.so.20
+%attr(755,root,root) %ghost %{_libdir}/libgpsd.so.21
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgps.so.20
 
@@ -329,9 +334,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libQgpsmm.so
 %{_mandir}/man3/libQgpsmm.3*
-# missing in scons build
-#%{_libdir}/libQgpsmm.prl
-#%{_pkgconfigdir}/Qgpsmm.pc
+%{_libdir}/libQgpsmm.prl
+%{_pkgconfigdir}/Qgpsmm.pc
 
 %files -n python-gps
 %defattr(644,root,root,755)

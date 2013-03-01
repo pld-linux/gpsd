@@ -1,54 +1,36 @@
---- gpsd-3.1/SConstruct.orig	2011-08-28 13:14:24.000000000 +0200
-+++ gpsd-3.1/SConstruct	2011-09-26 18:53:55.711394116 +0200
-@@ -686,7 +686,8 @@
- compiled_gpsdlib = Library(env=env,
+--- gpsd-3.8/SConstruct.orig	2013-03-01 18:51:51.019185370 +0100
++++ gpsd-3.8/SConstruct	2013-03-01 19:07:33.045812503 +0100
+@@ -273,8 +273,6 @@
+     env.Prepend(LIBPATH=[installdir('libdir')])
+ else:
+     env.Prepend(LIBPATH=[env["sysroot"] + installdir('libdir')])
+-if env["shared"]:
+-    env.Prepend(RPATH=[installdir('libdir')])
+ 
+ # Give deheader a way to set compiler flags
+ if 'MORECFLAGS' in os.environ:
+@@ -842,7 +840,8 @@
                             target="gpsd",
                             sources=libgpsd_sources,
--                           version=libversion, parse_flags=usblibs + rtlibs + bluezlibs)
-+                           version=libversion, parse_flags=usblibs + rtlibs + bluezlibs + ["-L.", "-lgps", "-lm"])
+                            version=libgpsd_version,
+-                           parse_flags=usblibs + rtlibs + bluezlibs)
++                           parse_flags=usblibs + rtlibs + bluezlibs + ["-L.", "-lgps", "-lm"])
 +env.Depends(compiled_gpsdlib, compiled_gpslib)
  
  libraries = [compiled_gpslib, compiled_gpsdlib]
  
-@@ -709,7 +710,8 @@
-             compile_flags = qt_env['CFLAGS']
-         qtobjects.append(qt_env.SharedObject(src.split(".")[0] + '-qt', src,
-                                        CC=compile_with, CFLAGS=compile_flags))
--    compiled_qgpsmmlib = Library(qt_env, "Qgpsmm", qtobjects, libversion)
-+    compiled_qgpsmmlib = Library(qt_env, "Qgpsmm", qtobjects, libversion, parse_flags=["-L.", "-lgps"])
-+    env.Depends(compiled_qgpsmmlib, compiled_gpslib)
-     libraries.append(compiled_qgpsmmlib)
+--- gpsd-3.8/SConstruct.orig	2013-03-01 19:26:46.005764118 +0100
++++ gpsd-3.8/SConstruct	2013-03-01 19:54:31.782360879 +0100
+@@ -268,12 +268,6 @@
+     wrapped.replace("/usr/etc", "/etc")
+     return wrapped
  
- # The libraries have dependencies on system libraries
-@@ -751,7 +753,7 @@
- gpsd_env.MergeFlags("-pthread")
- 
- gpsd = gpsd_env.Program('gpsd', gpsd_sources,
--                        parse_flags = gpsdlibs + dbus_xmit_libs)
-+                        parse_flags = gpsdlibs + dbus_xmit_libs + ["-lm"])
- env.Depends(gpsd, [compiled_gpsdlib, compiled_gpslib])
- 
- gpsdecode = env.Program('gpsdecode', ['gpsdecode.c'], parse_flags=gpsdlibs)
-@@ -764,19 +766,19 @@
- env.Depends(gpsdctl, compiled_gpslib)
- 
- gpsmon = env.Program('gpsmon', gpsmon_sources,
--                     parse_flags=gpsdlibs + ncurseslibs)
-+                     parse_flags=gpsdlibs + ncurseslibs + ["-lm"])
- env.Depends(gpsmon, [compiled_gpsdlib, compiled_gpslib])
- 
- gpspipe = env.Program('gpspipe', ['gpspipe.c'], parse_flags=gpslibs)
- env.Depends(gpspipe, compiled_gpslib)
- 
- gpxlogger = env.Program('gpxlogger', ['gpxlogger.c'], parse_flags=gpslibs+dbus_recv_libs)
--env.Depends(gpspipe, compiled_gpslib)
-+env.Depends(gpxlogger, compiled_gpslib)
- 
- lcdgps = env.Program('lcdgps', ['lcdgps.c'], parse_flags=gpslibs)
- env.Depends(lcdgps, compiled_gpslib)
- 
--cgps = env.Program('cgps', ['cgps.c'], parse_flags=gpslibs + ncurseslibs)
-+cgps = env.Program('cgps', ['cgps.c'], parse_flags=gpslibs + ncurseslibs + ["-lm"])
- env.Depends(cgps, compiled_gpslib)
- 
- binaries = [gpsd, gpsdecode, gpsctl, gpsdctl, gpspipe, gpxlogger, lcdgps]
+-# Honor the specified installation prefix in link paths.
+-if not env["sysroot"]:
+-    env.Prepend(LIBPATH=[installdir('libdir')])
+-else:
+-    env.Prepend(LIBPATH=[env["sysroot"] + installdir('libdir')])
+-
+ # Give deheader a way to set compiler flags
+ if 'MORECFLAGS' in os.environ:
+     env.Append(CFLAGS=Split(os.environ['MORECFLAGS']))
