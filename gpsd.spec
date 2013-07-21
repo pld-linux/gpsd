@@ -43,6 +43,16 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 # libgpsd expects gpsd_report() defined by user
 %define		skip_post_check_so	libgpsd\.so.*
 
+# note: to avoid recompiling/relinking on scons install, whole environment
+# needs to be the same in both build and install sections
+%define scons_env \
+	CC="%{__cc}" \\\
+	CXX="%{__cxx}" \\\
+	CFLAGS="%{rpmcflags}" \\\
+	CXXFLAGS="%{rpmcxxflags}" \\\
+	CPPFLAGS="%{rpmcppflags}" \\\
+	LDFLAGS="%{rpmldflags}"
+
 %description
 gpsd is a service daemon that mediates access to a GPS sensor
 connected to the host computer by serial or USB interface, making its
@@ -210,19 +220,9 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %patch3 -p1
 
 %build
-# note: to avoid recompiling/relinking on scons install, whole environment
-# needs to be the same in both build and install sections
-%define scons_env \
-CC="%{__cc}" \
-CXX="%{__cxx}" \
-CFLAGS="%{rpmcflags}" \
-CXXFLAGS="%{rpmcxxflags}" \
-CPPFLAGS="%{rpmcppflags}" \
-LDFLAGS="%{rpmldflags}"
-
-%define	scons_opts \
-	libdir=%{_libdir} \
-	pkgconfigdir=%{_pkgconfigdir} \
+%scons_env \
+%scons \
+	libdir=%{_lib} \
 	chrpath=False \
 	shared=True \
 	strip=False \
@@ -232,17 +232,13 @@ LDFLAGS="%{rpmldflags}"
 	%{!?with_bluez:bluez=False} \
 	%{?with_dbus:dbus_export=True}
 
-%scons_env \
-%scons \
-	%scons_opts
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
 %scons_env \
 DESTDIR=$RPM_BUILD_ROOT \
-%scons udev-install \
-	%scons_opts
+%scons udev-install
 
 # fix buggy libdir, kill -L/usr/* from qt Libs
 %{__sed} -i -e 's,^libdir=.*,libdir=%{_libdir},' \
