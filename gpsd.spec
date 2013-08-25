@@ -6,16 +6,14 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	3.8
+Version:	3.9
 Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download-mirror.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	1a3177b907f25c0ce6d1a0aa22597270
+# Source0-md5:	53a88f24a0973d23427e82e9a8914f19
 Patch0:		%{name}-link.patch
 Patch1:		%{name}-qt.patch
-Patch2:		%{name}-flags.patch
-Patch3:		%{name}-destdir.patch
 URL:		http://www.catb.org/gpsd/
 BuildRequires:	QtNetwork-devel >= 4.4
 %if %{with dbus}
@@ -216,8 +214,6 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
 
 %build
 %scons_env \
