@@ -14,6 +14,7 @@ Source0:	http://download-mirror.savannah.gnu.org/releases/gpsd/%{name}-%{version
 # Source0-md5:	53a88f24a0973d23427e82e9a8914f19
 Patch0:		%{name}-link.patch
 Patch1:		%{name}-qt.patch
+Patch2:		%{name}-desktop.patch
 URL:		http://www.catb.org/gpsd/
 BuildRequires:	QtNetwork-devel >= 4.4
 %if %{with dbus}
@@ -214,6 +215,7 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 %scons_env \
