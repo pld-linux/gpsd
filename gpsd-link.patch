@@ -1,9 +1,9 @@
 --- gpsd-3.8/SConstruct.orig	2013-03-01 18:51:51.019185370 +0100
 +++ gpsd-3.8/SConstruct	2013-03-01 19:07:33.045812503 +0100
-@@ -273,8 +273,6 @@
-     env.Prepend(LIBPATH=[installdir('libdir')])
- else:
-     env.Prepend(LIBPATH=[env["sysroot"] + installdir('libdir')])
+@@ -287,8 +287,6 @@
+ # Honor the specified installation prefix in link paths.
+ if env["sysroot"]:
+     env.Prepend(LIBPATH=[env["sysroot"] + installdir('libdir', add_destdir=False)])
 -if env["shared"]:
 -    env.Prepend(RPATH=[installdir('libdir')])
  
@@ -19,18 +19,12 @@
  
  libraries = [compiled_gpslib, compiled_gpsdlib]
  
---- gpsd-3.8/SConstruct.orig	2013-03-01 19:26:46.005764118 +0100
-+++ gpsd-3.8/SConstruct	2013-03-01 19:54:31.782360879 +0100
-@@ -268,12 +268,6 @@
-     wrapped.replace("/usr/etc", "/etc")
-     return wrapped
+@@ -976,7 +976,7 @@
+ #          linking
+ # The final executable will build but not be portable.
  
--# Honor the specified installation prefix in link paths.
--if not env["sysroot"]:
--    env.Prepend(LIBPATH=[installdir('libdir')])
--else:
--    env.Prepend(LIBPATH=[env["sysroot"] + installdir('libdir')])
--
- # Give deheader a way to set compiler flags
- if 'MORECFLAGS' in os.environ:
-     env.Append(CFLAGS=Split(os.environ['MORECFLAGS']))
+-env.StaticLibrary(target = 'libgps.a', source = libgps_sources)
++env.StaticLibrary(target = 'libgps.a', source = libgps_sources, parse_flags = dbus_libs)
+ 
+ # Source groups
+ 
