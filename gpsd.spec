@@ -7,7 +7,7 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	3.10
-Release:	1
+Release:	2
 License:	BSD
 Group:		Daemons
 Source0:	http://download-mirror.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.gz
