@@ -2,23 +2,22 @@
 # Conditional build:
 %bcond_without	dbus	# build without dbus support
 %bcond_without	bluez	# build without Bluetooth support
+%bcond_without	qt	# Qt based libQgpsmm library
+%bcond_with	qt4	# Qt 4 instead of Qt 5
+%bcond_without	systemd	# systemd instead of plain udev hotplug
 #
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	3.10
-Release:	5
+Version:	3.19
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download-mirror.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	fc5b03aae38b9b5b6880b31924d0ace3
-Patch0:		%{name}-link.patch
-Patch1:		%{name}-qt.patch
-Patch2:		%{name}-desktop.patch
-Patch3:		%{name}-destdir.patch
-Patch4:		python-install.patch
+# Source0-md5:	b3bf88706794eb8e5f2c2543bf7ba87b
+Patch0:		%{name}-desktop.patch
+Patch1:		%{name}-destdir.patch
 URL:		http://www.catb.org/gpsd/
-BuildRequires:	QtNetwork-devel >= 4.4
 %if %{with dbus}
 BuildRequires:	dbus-devel
 BuildRequires:	dbus-glib-devel
@@ -33,16 +32,19 @@ BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel >= 1:2.5
-BuildRequires:	qt4-qmake >= 4.4
 BuildRequires:	rpm-pythonprov
 BuildRequires:	scons >= 2.0.1
 BuildRequires:	sed >= 4.0
 BuildRequires:	xmlto
+%if %{with qt}
+%if %{with qt4}
+BuildRequires:	QtNetwork-devel >= 4.4
+%else
+BuildRequires:	Qt5Network-devel >= 5.0
+%endif
+%endif
 Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-
-# libgpsd expects gpsd_report() defined by user
-%define		skip_post_check_so	libgpsd\.so.*
 
 # note: to avoid recompiling/relinking on scons install, whole environment
 # needs to be the same in both build and install sections
@@ -217,57 +219,62 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
+
+%{__sed} -i -e 's,/usr/local/sbin,%{_sbindir},' systemd/*.service
 
 %build
 %scons_env \
-%scons \
+%scons build \
 	libdir=%{_lib} \
+	%{!?with_bluez:bluez=False} \
 	chrpath=False \
+	%{?with_dbus:dbus_export=True} \
+	leapfetch=False \
+	ncurses=True \
+	nostrip=True \
+	python_libdir=%{py_sitedir} \
+	%{!?with_qt:qt=False} \
+	%{?with_qt:%{!?with_qt4:qt_versioned=5}} \
 	shared=True \
 	strip=False \
-	systemd=True \
-	ncurses=True \
-	usb=True \
-	%{!?with_bluez:bluez=False} \
-	%{?with_dbus:dbus_export=True}
-
+	systemd=%{?with_systemd:True}%{!?with_systemd:False} \
+	usb=True
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
 %scons_env \
 DESTDIR=$RPM_BUILD_ROOT \
-%scons udev-install
+%scons -j1 install %{?with_systemd:systemd_install} udev-install
 
-# fix buggy libdir, kill -L/usr/* from qt Libs
-%{__sed} -i -e 's,^libdir=.*,libdir=%{_libdir},' \
-	-e 's,-L/[^ ]* *,,' \
-	$RPM_BUILD_ROOT%{_pkgconfigdir}/*.pc
+# kill -L/usr/lib* from qt Libs
+%{__sed} -i -e 's,-L/[^ ]* *,,' $RPM_BUILD_ROOT%{_pkgconfigdir}/Qgpsmm.pc
 
 # invoke python directly
 %{__sed} -i -e '1s,/usr/bin/env python,/usr/bin/python,' \
-	$RPM_BUILD_ROOT%{_bindir}/{gpscat,gpsfake,gpsprof,xgps,xgpsspeed,gegps}
+	$RPM_BUILD_ROOT%{_bindir}/{gegps,gpscat,gpsfake,gpsprof,ubxtool,xgps,xgpsspeed,zerk}
 
 # omitted from make install
 install gpsinit $RPM_BUILD_ROOT%{_sbindir}
-install -Dp dgpsip-servers $RPM_BUILD_ROOT%{_datadir}/gpsd/dgpsip-servers
-cp -p gpsd.h $RPM_BUILD_ROOT%{_includedir}
 
+install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir},/etc/sysconfig}
 #install packaging/rpm/gpsd.init $RPM_BUILD_ROOT/etc/rc.d/init.d/gpsd
-#install packaging/rpm/gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
-install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
+#cp -p packaging/rpm/gpsd.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/gpsd
 cp -p packaging/X11/{xgps,xgpsspeed}.desktop $RPM_BUILD_ROOT%{_desktopdir}
 cp -p packaging/X11/gpsd-logo.png $RPM_BUILD_ROOT%{_pixmapsdir}
+
+%if %{with systemd}
+cat >$RPM_BUILD_ROOT/etc/sysconfig/gpsd <<'EOF'
+# Options for gpsd, including serial devices
+OPTIONS=""
+# Set to 'true' to add USB devices automatically via udev
+USBAUTO="true"
+EOF
+%endif
 
 %py_comp $RPM_BUILD_ROOT%{py_sitedir}
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
-
-# symlinks not needed
-%{__rm} $RPM_BUILD_ROOT%{_libdir}/lib*.so.??.0
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -280,45 +287,47 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc README INSTALL COPYING TODO AUTHORS
+%doc AUTHORS COPYING INSTALL NEWS README TODO
 %attr(755,root,root) %{_bindir}/gpsmon
+%attr(755,root,root) %{_bindir}/ntpshmmon
+%attr(755,root,root) %{_bindir}/ppscheck
 %attr(755,root,root) %{_sbindir}/gpsd
 %attr(755,root,root) %{_sbindir}/gpsdctl
 %attr(755,root,root) %{_sbindir}/gpsinit
 %{_mandir}/man1/gpsmon.1*
+%{_mandir}/man1/ntpshmmon.1*
 %{_mandir}/man8/gpsd.8*
 %{_mandir}/man8/gpsdctl.8*
 %{_mandir}/man8/gpsinit.8*
-%dir %{_datadir}/gpsd
-%{_datadir}/gpsd/dgpsip-servers
+%{_mandir}/man8/ppscheck.8*
 
 %files -n udev-gpsd
 %defattr(644,root,root,755)
+%if %{with systemd}
+%{systemdunitdir}/gpsd.service
+%{systemdunitdir}/gpsd.socket
+%{systemdunitdir}/gpsdctl@.service
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
+%else
 %attr(755,root,root) /lib/udev/gpsd.hotplug
+%endif
 /lib/udev/rules.d/25-gpsd.rules
 #%attr(754,root,root) /etc/rc.d/init.d/gpsd
-#%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/gpsd
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libgpsd.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgpsd.so.22
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgps.so.21
+%attr(755,root,root) %ghost %{_libdir}/libgps.so.25
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/gpsdecode
 %attr(755,root,root) %{_libdir}/libgps.so
-%attr(755,root,root) %{_libdir}/libgpsd.so
 %{_includedir}/gps.h
-%{_includedir}/gpsd.h
 %{_includedir}/libgpsmm.h
 %{_pkgconfigdir}/libgps.pc
-%{_pkgconfigdir}/libgpsd.pc
 %{_mandir}/man1/gpsdecode.1*
 %{_mandir}/man3/libgps.3*
-%{_mandir}/man3/libgpsd.3*
 %{_mandir}/man3/libgpsmm.3*
 %{_mandir}/man5/gpsd_json.5*
 %{_mandir}/man5/srec.5*
@@ -326,7 +335,7 @@ rm -rf $RPM_BUILD_ROOT
 %files qt-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libQgpsmm.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.21
+%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.25
 
 %files qt-devel
 %defattr(644,root,root,755)
@@ -341,6 +350,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gpscat
 %attr(755,root,root) %{_bindir}/gpsfake
 %attr(755,root,root) %{_bindir}/gpsprof
+%attr(755,root,root) %{_bindir}/ubxtool
+%attr(755,root,root) %{_bindir}/zerk
 %dir %{py_sitedir}/gps
 %attr(755,root,root) %{py_sitedir}/gps/*.so
 %{py_sitedir}/gps/*.py[co]
@@ -349,19 +360,24 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/gpscat.1*
 %{_mandir}/man1/gpsfake.1*
 %{_mandir}/man1/gpsprof.1*
+%{_mandir}/man1/ubxtool.1*
+%{_mandir}/man1/zerk.1*
 
 %files clients
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gps2udp
 %attr(755,root,root) %{_bindir}/gpsctl
-%attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gpspipe
+%attr(755,root,root) %{_bindir}/gpsrinex
 %{?with_dbus:%attr(755,root,root) %{_bindir}/gpxlogger}
-%{_mandir}/man1/gps2udp.1*
-%{_mandir}/man1/gpsctl.1*
 %{_mandir}/man1/cgps.1*
 %{_mandir}/man1/gps.1*
+%{_mandir}/man1/gps2udp.1*
+%{_mandir}/man1/gpsctl.1*
 %{_mandir}/man1/gpspipe.1*
+%{_mandir}/man1/gpsrinex.1*
+%{_mandir}/man1/gpxlogger.1*
 
 %files clients-gui
 %defattr(644,root,root,755)
