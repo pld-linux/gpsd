@@ -10,7 +10,7 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	3.20
-Release:	1
+Release:	2
 License:	BSD
 Group:		Daemons
 Source0:	http://download.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.xz
@@ -32,6 +32,9 @@ BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel >= 1:2.6
+BuildRequires:	python-pycairo
+BuildRequires:	python-pygobject3 >= 3.0
+BuildRequires:	python-serial
 BuildRequires:	rpm-pythonprov
 BuildRequires:	scons >= 2.3.0
 BuildRequires:	sed >= 4.0
@@ -167,6 +170,8 @@ Summary:	Python GPSd client library
 Summary(pl.UTF-8):	Biblioteka kliencka GPSd dla Pythona
 Group:		Libraries/Python
 Requires:	%{name}-libs = %{version}-%{release}
+# used by ubxtool and zerk
+Requires:	python-serial
 
 %description -n python-gps
 GPSd client library for Python.
@@ -225,6 +230,8 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %patch1 -p1
 
 %{__sed} -i -e 's,/usr/local/sbin,%{_sbindir},' systemd/*.service
+
+# invoke python directly
 %{__sed} -i -e '1s,/usr/bin/env python$,%{__python},' \
 	gegps gpscat gpsfake gpsprof ubxtool xgps xgpsspeed zerk
 
@@ -255,10 +262,6 @@ DESTDIR=$RPM_BUILD_ROOT \
 
 # kill -L/usr/lib* from qt Libs
 %{__sed} -i -e 's,-L/[^ ]* *,,' $RPM_BUILD_ROOT%{_pkgconfigdir}/Qgpsmm.pc
-
-# invoke python directly
-%{__sed} -i -e '1s,/usr/bin/env python,/usr/bin/python,' \
-	$RPM_BUILD_ROOT%{_bindir}/{gegps,gpscat,gpsfake,gpsprof,ubxtool,xgps,xgpsspeed,zerk}
 
 # omitted from make install
 install gpsinit $RPM_BUILD_ROOT%{_sbindir}
