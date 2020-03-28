@@ -9,12 +9,12 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	3.19
+Version:	3.20
 Release:	1
 License:	BSD
 Group:		Daemons
-Source0:	http://download-mirror.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.gz
-# Source0-md5:	b3bf88706794eb8e5f2c2543bf7ba87b
+Source0:	http://download.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.xz
+# Source0-md5:	c07c1753465ed34463b8192bdf8295e2
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-destdir.patch
 URL:		http://www.catb.org/gpsd/
@@ -31,11 +31,13 @@ BuildRequires:	libusb-devel >= 1.0.0
 BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
 BuildRequires:	pkgconfig
-BuildRequires:	python-devel >= 1:2.5
+BuildRequires:	python-devel >= 1:2.6
 BuildRequires:	rpm-pythonprov
-BuildRequires:	scons >= 2.0.1
+BuildRequires:	scons >= 2.3.0
 BuildRequires:	sed >= 4.0
+BuildRequires:	tar >= 1:1.22
 BuildRequires:	xmlto
+BuildRequires:	xz
 %if %{with qt}
 %if %{with qt4}
 BuildRequires:	QtNetwork-devel >= 4.4
@@ -197,8 +199,10 @@ Summary:	Clients for gpsd with an X interface
 Summary(pl.UTF-8):	Aplikacje klienckie z interfejsem X
 Group:		Applications/System
 Requires:	%{name}-libs = %{version}-%{release}
+Requires:	gtk+3 >= 3.0
 Requires:	python-gps = %{version}-%{release}
-Requires:	python-pygtk-gtk >= 2:2.0
+Requires:	python-pycairo
+Requires:	python-pygobject3 >= 3.0
 
 %description clients-gui
 xgps is a simple test client for gpsd with an X interface. It displays
@@ -221,6 +225,8 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 %patch1 -p1
 
 %{__sed} -i -e 's,/usr/local/sbin,%{_sbindir},' systemd/*.service
+%{__sed} -i -e '1s,/usr/bin/env python$,%{__python},' \
+	gegps gpscat gpsfake gpsprof ubxtool xgps xgpsspeed zerk
 
 %build
 %scons_env \
@@ -287,7 +293,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc AUTHORS COPYING INSTALL NEWS README TODO
+%doc AUTHORS COPYING INSTALL.adoc NEWS README.adoc TODO
 %attr(755,root,root) %{_bindir}/gpsmon
 %attr(755,root,root) %{_bindir}/ntpshmmon
 %attr(755,root,root) %{_bindir}/ppscheck
