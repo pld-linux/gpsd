@@ -1,0 +1,25 @@
+--- gpsd-3.25/SConscript.orig	2024-06-03 21:52:57.731064976 +0200
++++ gpsd-3.25/SConscript	2024-06-04 20:06:55.564129484 +0200
+@@ -1161,22 +1161,6 @@ if not cleaning and not helping:
+     else:
+         confdefs.append("/* #undef HAVE_LIBRT */\n")
+ 
+-    # for slowlaris socket(), bind(), etc.
+-    if config.CheckLib('libnsl'):
+-        confdefs.append("#define HAVE_LIBNSL\n")
+-        # System library - no special flags
+-        rtlibs += ["-lnsl"]
+-    else:
+-        confdefs.append("/* #undef HAVE_LIBNSL */\n")
+-
+-    # for slowlaris socket(), bind(), etc.
+-    if config.CheckLib('libsocket'):
+-        confdefs.append("#define HAVE_LIBSOCKET\n")
+-        # System library - no special flags
+-        rtlibs += ["-lsocket"]
+-    else:
+-        confdefs.append("/* #undef HAVE_LIBNSOCKET */\n")
+-
+     # The main reason we check for libm explicitly is to set up the config
+     # environment for CheckFunc for sincos().  But it doesn't hurt to omit
+     # the '-lm' when it isn't appropriate.

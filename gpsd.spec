@@ -1,7 +1,7 @@
 #
 # Conditional build:
-%bcond_without	dbus	# build without dbus support
-%bcond_without	bluez	# build without Bluetooth support
+%bcond_without	dbus	# DBus support
+%bcond_without	bluez	# Bluetooth support
 %bcond_without	qt	# Qt based libQgpsmm library
 %bcond_with	qt4	# Qt 4 instead of Qt 5
 %bcond_without	systemd	# systemd instead of plain udev hotplug
@@ -9,33 +9,30 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	3.20
-Release:	2
+Version:	3.25
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.xz
-# Source0-md5:	c07c1753465ed34463b8192bdf8295e2
+# Source0-md5:	c4b1d2c6eab0ad04a7516288ec3115ee
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-destdir.patch
+Patch2:		%{name}-link.patch
 URL:		http://www.catb.org/gpsd/
-%if %{with dbus}
-BuildRequires:	dbus-devel
-BuildRequires:	dbus-glib-devel
-%endif
 %{?with_bluez:BuildRequires:	bluez-libs-devel}
-BuildRequires:	docbook-dtd412-xml
-BuildRequires:	docbook-style-xsl
+%{?with_dbus:BuildRequires:	dbus-devel}
 BuildRequires:	libcap-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	libusb-devel >= 1.0.0
-BuildRequires:	libxslt-progs
 BuildRequires:	ncurses-devel
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel >= 1:2.6
 BuildRequires:	python-pycairo
 BuildRequires:	python-pygobject3 >= 3.0
 BuildRequires:	python-serial
+BuildRequires:	rpm-build >= 4.6
 BuildRequires:	rpm-pythonprov
+BuildRequires:	ruby-asciidoctor
 BuildRequires:	scons >= 2.3.0
 BuildRequires:	sed >= 4.0
 BuildRequires:	tar >= 1:1.22
@@ -126,7 +123,7 @@ Summary(pl.UTF-8):	Biblioteki klienckie dla C i Pythona do komunikacji z gpsd lu
 Group:		Development/Libraries
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libstdc++-devel
-Obsoletes:	gpsd-static
+Obsoletes:	gpsd-static < 3
 
 %description devel
 This package provides C header files for the gpsd shared libraries
@@ -224,16 +221,26 @@ przypadku GPS-ów obsługujących to) położenia dostępnych satelitów.
 
 xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 
+%package -n mibs-gpsd
+Summary:	MIB for gpsd gpssnmp part
+Summary(pl.UTF-8):	MIB dla części gpssnmp projektu gpsd
+Group:		Applications/System
+Requires:	mibs-dirs
+BuildArch:	noarch
+
+%description -n mibs-gpsd
+This MIB contains definition of the OIDs used by gpssnmp part of the
+gpsd project.
+
+%description -n mibs-gpsd -l pl.UTF-8
+Ten MIB zawiera definicje OID-ów używany przez gpssnmp - część
+projektu gpsd.
+
 %prep
 %setup -q
 %patch0 -p1
 %patch1 -p1
-
-%{__sed} -i -e 's,/usr/local/sbin,%{_sbindir},' systemd/*.service
-
-# invoke python directly
-%{__sed} -i -e '1s,/usr/bin/env python$,%{__python},' \
-	gegps gpscat gpsfake gpsprof ubxtool xgps xgpsspeed zerk
+%patch2 -p1
 
 %build
 %scons_env \
@@ -245,7 +252,8 @@ xgpsspeed to prędkościomierz używający informacji o położeniu z GPS-a.
 	leapfetch=False \
 	ncurses=True \
 	nostrip=True \
-	python_libdir=%{py_sitedir} \
+	python_libdir=%{py_sitescriptdir} \
+	python_shebang=%{__python} \
 	%{!?with_qt:qt=False} \
 	%{?with_qt:%{!?with_qt4:qt_versioned=5}} \
 	shared=True \
@@ -281,9 +289,12 @@ USBAUTO="true"
 EOF
 %endif
 
-%py_comp $RPM_BUILD_ROOT%{py_sitedir}
-%py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
+%py_comp $RPM_BUILD_ROOT%{py_sitescriptdir}
+%py_ocomp $RPM_BUILD_ROOT%{py_sitescriptdir}
 %py_postclean
+
+# packaged as %doc
+%{__rm} -r $RPM_BUILD_ROOT%{_datadir}/gpsd/doc
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -296,7 +307,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc AUTHORS COPYING INSTALL.adoc NEWS README.adoc TODO
+%doc AUTHORS COPYING INSTALL.adoc NEWS README.adoc SUPPORT.adoc TODO maintainers.adoc
 %attr(755,root,root) %{_bindir}/gpsmon
 %attr(755,root,root) %{_bindir}/ntpshmmon
 %attr(755,root,root) %{_bindir}/ppscheck
@@ -326,12 +337,15 @@ rm -rf $RPM_BUILD_ROOT
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgps.so.25
+%attr(755,root,root) %ghost %{_libdir}/libgps.so.30
+%attr(755,root,root) %{_libdir}/libgpsdpacket.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpsdpacket.so.30
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/gpsdecode
 %attr(755,root,root) %{_libdir}/libgps.so
+%attr(755,root,root) %{_libdir}/libgpsdpacket.so
 %{_includedir}/gps.h
 %{_includedir}/libgpsmm.h
 %{_pkgconfigdir}/libgps.pc
@@ -339,12 +353,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man3/libgps.3*
 %{_mandir}/man3/libgpsmm.3*
 %{_mandir}/man5/gpsd_json.5*
-%{_mandir}/man5/srec.5*
 
 %files qt-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libQgpsmm.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.25
+%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.30
 
 %files qt-devel
 %defattr(644,root,root,755)
@@ -357,18 +370,22 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/gegps
 %attr(755,root,root) %{_bindir}/gpscat
+%attr(755,root,root) %{_bindir}/gpscsv
 %attr(755,root,root) %{_bindir}/gpsfake
+%attr(755,root,root) %{_bindir}/gpsplot
 %attr(755,root,root) %{_bindir}/gpsprof
+%attr(755,root,root) %{_bindir}/gpssubframe
 %attr(755,root,root) %{_bindir}/ubxtool
 %attr(755,root,root) %{_bindir}/zerk
-%dir %{py_sitedir}/gps
-%attr(755,root,root) %{py_sitedir}/gps/*.so
-%{py_sitedir}/gps/*.py[co]
-%{py_sitedir}/gps-%{version}.egg-info
+%{py_sitescriptdir}/gps
+%{py_sitescriptdir}/gps-%{version}.egg-info
 %{_mandir}/man1/gegps.1*
 %{_mandir}/man1/gpscat.1*
+%{_mandir}/man1/gpscsv.1*
 %{_mandir}/man1/gpsfake.1*
+%{_mandir}/man1/gpsplot.1*
 %{_mandir}/man1/gpsprof.1*
+%{_mandir}/man1/gpssubframe.1*
 %{_mandir}/man1/ubxtool.1*
 %{_mandir}/man1/zerk.1*
 
@@ -377,15 +394,19 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/cgps
 %attr(755,root,root) %{_bindir}/gps2udp
 %attr(755,root,root) %{_bindir}/gpsctl
+%attr(755,root,root) %{_bindir}/gpsdebuginfo
 %attr(755,root,root) %{_bindir}/gpspipe
 %attr(755,root,root) %{_bindir}/gpsrinex
-%{?with_dbus:%attr(755,root,root) %{_bindir}/gpxlogger}
+%attr(755,root,root) %{_bindir}/gpssnmp
+%attr(755,root,root) %{_bindir}/gpxlogger
 %{_mandir}/man1/cgps.1*
 %{_mandir}/man1/gps.1*
 %{_mandir}/man1/gps2udp.1*
 %{_mandir}/man1/gpsctl.1*
+%{_mandir}/man1/gpsdebuginfo.1*
 %{_mandir}/man1/gpspipe.1*
 %{_mandir}/man1/gpsrinex.1*
+%{_mandir}/man1/gpssnmp.1*
 %{_mandir}/man1/gpxlogger.1*
 
 %files clients-gui
@@ -393,9 +414,16 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/lcdgps
 %attr(755,root,root) %{_bindir}/xgps
 %attr(755,root,root) %{_bindir}/xgpsspeed
+%dir %{_datadir}/gpsd
+%{_datadir}/gpsd/icons
 %{_mandir}/man1/lcdgps.1*
 %{_mandir}/man1/xgps.1*
 %{_mandir}/man1/xgpsspeed.1*
 %{_desktopdir}/xgps.desktop
 %{_desktopdir}/xgpsspeed.desktop
 %{_pixmapsdir}/gpsd-logo.png
+
+%files -n mibs-gpsd
+%defattr(644,root,root,755)
+%dir %{_datadir}/snmp/mibs/gpsd
+%{_datadir}/snmp/mibs/gpsd/GPSD-MIB

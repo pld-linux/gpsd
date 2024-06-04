@@ -1,11 +1,11 @@
---- gpsd-3.19/SConstruct.orig	2019-07-02 04:00:17.000000000 +0200
-+++ gpsd-3.19/SConstruct	2019-10-04 17:36:33.068267039 +0200
-@@ -2663,7 +2663,7 @@
- 
- if env['systemd'] and not env["sysroot"]:
-     systemctl_daemon_reload = Utility('systemctl-daemon-reload', '',
--                                      ['systemctl daemon-reload || true'])
-+                                      ['true'])
-     env.AlwaysBuild(systemctl_daemon_reload)
-     env.Precious(systemctl_daemon_reload)
-     env.Requires(systemctl_daemon_reload, systemd_install)
+--- gpsd-3.25/SConscript.orig	2023-01-10 23:38:26.000000000 +0100
++++ gpsd-3.25/SConscript	2024-06-02 21:57:01.654479159 +0200
+@@ -3256,7 +3256,7 @@ if env['systemd']:
+     env.Requires(udev_install, systemd_install)
+     if not env["sysroot"]:
+         systemctl_daemon_reload = Utility('systemctl-daemon-reload', '',
+-                                          ['systemctl daemon-reload || true'])
++                                          ['true'])
+         env.AlwaysBuild(systemctl_daemon_reload)
+         env.Precious(systemctl_daemon_reload)
+         env.Requires(systemctl_daemon_reload, systemd_install)
