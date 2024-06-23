@@ -10,7 +10,7 @@ Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
 Version:	3.25
-Release:	1
+Release:	2
 License:	BSD
 Group:		Daemons
 Source0:	http://download.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.xz
@@ -246,6 +246,7 @@ projektu gpsd.
 %scons_env \
 %scons build \
 	libdir=%{_lib} \
+	mibdir=share/mibs/gpsd \
 	%{!?with_bluez:bluez=False} \
 	chrpath=False \
 	%{?with_dbus:dbus_export=True} \
@@ -425,5 +426,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n mibs-gpsd
 %defattr(644,root,root,755)
-%dir %{_datadir}/snmp/mibs/gpsd
-%{_datadir}/snmp/mibs/gpsd/GPSD-MIB
+%dir %{_datadir}/mibs/gpsd
+%{_datadir}/mibs/gpsd/GPSD-MIB
