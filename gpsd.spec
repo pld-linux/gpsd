@@ -9,12 +9,12 @@
 Summary:	Service daemon for mediating access to a GPS
 Summary(pl.UTF-8):	Oprogramowanie komunikujące się z GPS-em
 Name:		gpsd
-Version:	3.25
-Release:	2
+Version:	3.26.1
+Release:	1
 License:	BSD
 Group:		Daemons
 Source0:	http://download.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.xz
-# Source0-md5:	c4b1d2c6eab0ad04a7516288ec3115ee
+# Source0-md5:	b1f7281bea078408a91bb6f28f44f033
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-destdir.patch
 Patch2:		%{name}-link.patch
@@ -338,9 +338,9 @@ rm -rf $RPM_BUILD_ROOT
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libgps.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgps.so.30
+%attr(755,root,root) %ghost %{_libdir}/libgps.so.31
 %attr(755,root,root) %{_libdir}/libgpsdpacket.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgpsdpacket.so.30
+%attr(755,root,root) %ghost %{_libdir}/libgpsdpacket.so.31
 
 %files devel
 %defattr(644,root,root,755)
@@ -358,7 +358,7 @@ rm -rf $RPM_BUILD_ROOT
 %files qt-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libQgpsmm.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.30
+%attr(755,root,root) %ghost %{_libdir}/libQgpsmm.so.31
 
 %files qt-devel
 %defattr(644,root,root,755)
@@ -396,6 +396,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gps2udp
 %attr(755,root,root) %{_bindir}/gpsctl
 %attr(755,root,root) %{_bindir}/gpsdebuginfo
+%attr(755,root,root) %{_bindir}/gpslogntp
 %attr(755,root,root) %{_bindir}/gpspipe
 %attr(755,root,root) %{_bindir}/gpsrinex
 %attr(755,root,root) %{_bindir}/gpssnmp
@@ -405,6 +406,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/gps2udp.1*
 %{_mandir}/man1/gpsctl.1*
 %{_mandir}/man1/gpsdebuginfo.1*
+%{_mandir}/man1/gpslogntp.1*
 %{_mandir}/man1/gpspipe.1*
 %{_mandir}/man1/gpsrinex.1*
 %{_mandir}/man1/gpssnmp.1*
