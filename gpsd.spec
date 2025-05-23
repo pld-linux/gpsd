@@ -18,6 +18,7 @@ Source0:	http://download.savannah.gnu.org/releases/gpsd/%{name}-%{version}.tar.x
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-destdir.patch
 Patch2:		%{name}-link.patch
+Patch3:		%{name}-types.patch
 URL:		http://www.catb.org/gpsd/
 %{?with_bluez:BuildRequires:	bluez-libs-devel}
 %{?with_dbus:BuildRequires:	dbus-devel}
@@ -241,6 +242,7 @@ projektu gpsd.
 %patch -P0 -p1
 %patch -P1 -p1
 %patch -P2 -p1
+%patch -P3 -p1
 
 %build
 %scons_env \

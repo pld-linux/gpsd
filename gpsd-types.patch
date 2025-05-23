@@ -1,0 +1,11 @@
+--- gpsd-3.26.1/drivers/driver_nmea0183.c.orig	2025-05-07 03:00:37.000000000 +0200
++++ gpsd-3.26.1/drivers/driver_nmea0183.c	2025-05-22 21:56:18.606283079 +0200
+@@ -363,7 +363,7 @@ static int merge_ddmmyy(const char *ddmm
+  *
+  * return: 0 == OK,  otherwise failure
+  */
+-static int decode_hhmmss(struct tm *date, long *nsec, const char *hhmmss,
++static int decode_hhmmss(struct tm *date, typeof ((timespec_t){0}.tv_nsec) *nsec, const char *hhmmss,
+                          struct gps_device_t *session)
+ {
+     int old_hour = date->tm_hour;
